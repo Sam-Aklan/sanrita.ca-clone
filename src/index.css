@@ -5,5 +5,5 @@ body{
 }
 
 #root{
-    @apply w-full h-screen min-h-screen bg-amber-400
+    @apply w-full h-screen min-h-screen
 }
