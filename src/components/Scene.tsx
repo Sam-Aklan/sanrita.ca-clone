@@ -1,10 +1,27 @@
 import * as THREE from 'three';
 
-import { useEffect,useMemo,useRef } from 'react';
+import { useCallback, useEffect,useMemo,useRef } from 'react';
 import {Environment, OrbitControls, PerspectiveCamera, useTexture} from "@react-three/drei";
 import { useThree } from '@react-three/fiber';
 import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShader';
 import type { PerspectiveCamera as CameraType } from 'three'
+import { Pin } from './Pin';
+
+type PinData = {
+  id: number
+  title: string
+  u: number
+  v: number
+  z?: number
+  radius?: number
+  color?: string
+}
+const pins: PinData[] = [
+  { id: 1, title: 'port', u: 0.46, v: 0.40, z: 0.05, radius: 0.03, color: 'blue' },
+  { id: 2, title: 'harbour', u: 0.12, v: 0.55, z: 0.10, radius: 0.03, color: 'cyan' },
+  { id: 3, title: 'city', u: 0.483, v: 0.78, z: 0.10, radius: 0.03, color: 'pink' },
+  { id: 4, title: 'mountain', u: 0.829, v: 0.915, z: 0.38, radius: 0.03, color: 'red' },
+]
 
 const Scene = () => {
   const cameraRef = useRef<CameraType>(null)
@@ -36,7 +53,7 @@ const Scene = () => {
 
     },[heightMap,mountain])
 
-    const diminsion = useMemo(()=>{
+    const dimensions = useMemo(()=>{
       if(!cameraRef.current) return  {}
       const camera = cameraRef.current
       const distance = Math.abs(camera.position.z - 0.) // plane z position
@@ -50,14 +67,43 @@ const Scene = () => {
     return { width, height }
     },[size,cameraRef.current])
 
-    console.log("width",diminsion.width, "height", diminsion.height)
+  //  const roundUp = useCallback((num:number)=> Math.ceil(num * 1000)/1000,[])
+
+   const toPlanePos = useCallback(( u:number,
+  v:number,
+  z:number=0.05
+  )=>{
+      
+  // const x = roundUp((u / dimensions.width) + 0.5);
+  // const y = roundUp((v / dimensions.height) + .5);
+   const x = (u - 0.5) * dimensions.width
+    const y = (v - 0.5) * dimensions.height
+
+  return [x, y,z]
+
+    },[dimensions])
+
+//     const pins = useMemo(()=>{
+//      const anchors = [
+//       {u:-0.15,v:-0.165},
+// {u:-1.4,v:0.1},
+// {u:-0.05,v:.45},
+// {u:1.07,v:.57},
+//     ]
+//     return anchors.map(pin=>toPlanePos(pin.u,pin.v))
+//   }
+//     ,[toPlanePos])
+
+    console.log("width",dimensions.width, "height", dimensions.height)
+    console.log("pins",pins)
+
 
   return (
     <>
     <Environment files={"./city-lightings.hdr"}/>
      <OrbitControls
      onChange={(e)=>{
-      if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
+      // if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
     }}
      />
      <PerspectiveCamera
@@ -69,17 +115,16 @@ const Scene = () => {
         fov={75}
         ref={cameraRef}
       />
-    <group position={[0,0.,0.]} scale={1}>
+    <group position={[0,0.,0.3]} scale={1} ref={mapRef}>
      <axesHelper args={[10]}/>
        <mesh 
      renderOrder={100} 
-    // rotation={[-Math.PI / 2.5, 0, 0]}
+   
      >
-        <planeGeometry args={[diminsion?.width, diminsion?.height,100 , 100]} />
+        <planeGeometry args={[dimensions?.width, dimensions?.height,100 , 100]} />
         <shaderMaterial
           vertexShader={vertexMapShader}
-          // transparent
-          // side={THREE.DoubleSide}
+         
           fragmentShader={fragmentMapShader}
           uniforms={sharedUniforms}
           needsUpdate={true}
@@ -87,6 +132,19 @@ const Scene = () => {
         />
         {/* <meshStandardMaterial color={'red'}/> */}
       </mesh>
+        {pins.map((pin) => (
+            <Pin
+              key={pin.id}
+              title={pin.title}
+              radius={pin.radius ?? 0.03}
+              color={pin.color ?? 'white'}
+              position={toPlanePos(
+                pin.u,
+                pin.v,
+                pin.z ?? 0.05
+              ) as [number,number,number]}
+            />
+          ))}
     </group>
     
     </>
