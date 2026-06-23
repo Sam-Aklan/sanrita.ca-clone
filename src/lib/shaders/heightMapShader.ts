@@ -40,6 +40,7 @@ void main(){
 const fragmentMapShader = /*glsl*/`
 uniform sampler2D uColorMap;
 uniform vec3 uLightDir;
+uniform sampler2D uBlobTexture; // Added for Blob Simulation
 
 varying vec2 vUv;
 varying float vHeight;
@@ -58,6 +59,16 @@ void main(){
 
     // coastlines brighter
     color *= mix(1.2, 1.0, smoothstep(0.0,0.08,vHeight));
+
+    // ===== NEON BLOB GLOW =====
+    vec4 blobData = texture2D(uBlobTexture, vUv);
+    float pigment = blobData.r;
+    
+    // Glowing neon color (e.g., bright cyan/blue)
+    vec3 neonColor = vec3(0.0, 1.0, 0.9); // Cyan
+    
+    // Add glowing effect (additive blending)
+    color += neonColor * pigment * 2.0; 
 
     gl_FragColor = vec4(color * light,1.0);
 }

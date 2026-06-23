@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 
-import { useCallback, useEffect,useMemo,useRef } from 'react';
+import { useCallback, useEffect,useMemo,useRef, useState } from 'react';
 import {Environment, OrbitControls, PerspectiveCamera, useTexture} from "@react-three/drei";
-import { useThree } from '@react-three/fiber';
+import { useThree, type ThreeEvent } from '@react-three/fiber';
 import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShader';
 import type { PerspectiveCamera as CameraType } from 'three'
 import { Pin } from './Pin';
+import { BlobSimulation } from './BlobSimulation';
 
 type PinData = {
   id: number
@@ -25,19 +26,28 @@ const pins: PinData[] = [
 
 const Scene = () => {
   const cameraRef = useRef<CameraType>(null)
+  const mapRef = useRef<THREE.Group>(null)
+  const materialRef = useRef<THREE.ShaderMaterial>(null)
+  // hold and drag refs
+  const dragging = useRef(false)
+const last = useRef([0,0])
+// textures
     const [mountain, heightMap]= useTexture(['./Mountain-annonated.png','./height-map-optimaized.jpg']);
-
+// uniforms
    const sharedUniforms = useRef({
     uHeightMap: { value: heightMap },
   uColorMap: { value: mountain },
+  uBlobTexture: { value: null }, // Added for blob simulation
 
   uTexelSize: { value: new THREE.Vector2() },
-  uHeightScale: { value: 5},
-    uStrength: {value:1.},
+  uHeightScale: { value: 20},
+    uStrength: {value:.5},
   uLightDir: { value: new THREE.Vector3(1,1,1).normalize() }
    }).current;
 
     const {size}= useThree()
+    const [pointerUv, setPointerUv] = useState(new THREE.Vector2(-1, -1));
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(()=>{
 
@@ -52,7 +62,7 @@ const Scene = () => {
       mountain.wrapT = THREE.ClampToEdgeWrapping;
 
     },[heightMap,mountain])
-
+// calculate width and height so the panel fits the entire screen
     const dimensions = useMemo(()=>{
       if(!cameraRef.current) return  {}
       const camera = cameraRef.current
@@ -83,29 +93,44 @@ const Scene = () => {
 
     },[dimensions])
 
-//     const pins = useMemo(()=>{
-//      const anchors = [
-//       {u:-0.15,v:-0.165},
-// {u:-1.4,v:0.1},
-// {u:-0.05,v:.45},
-// {u:1.07,v:.57},
-//     ]
-//     return anchors.map(pin=>toPlanePos(pin.u,pin.v))
-//   }
-//     ,[toPlanePos])
+const onPointerDownHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
+ dragging.current = true;
+ last.current = [e.clientX, e.clientY]
+},[])
+const onPointerUpHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
+dragging.current = false;
+},[])
+const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
 
-    console.log("width",dimensions.width, "height", dimensions.height)
-    console.log("pins",pins)
+  if (e.uv) {
+    setPointerUv(e.uv.clone());
+  }
+
+  if(!mapRef.current || ! dragging.current)return
+
+  const dx = e.clientX - last.current[0]
+  const dy = e.clientY - last.current[1]
+
+  last.current = [e.clientX, e.clientY]
+
+  mapRef.current.position.x += dx * 0.002
+  mapRef.current.position.y -= dy * 0.002
+
+  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x,-.8,.5)
+  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y,-.43,.1)
+
+},[])
 
 
   return (
     <>
     <Environment files={"./city-lightings.hdr"}/>
-     <OrbitControls
+      {/* <OrbitControls
      onChange={(e)=>{
-      // if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
+
+       if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
     }}
-     />
+     />  */}
      <PerspectiveCamera
         makeDefault
         near={0.1}
@@ -115,14 +140,27 @@ const Scene = () => {
         fov={75}
         ref={cameraRef}
       />
+      {heightMap && (
+        <BlobSimulation 
+          heightMap={heightMap} 
+          pointerUv={pointerUv} 
+          isHovered={isHovered}
+          mapMaterialRef={materialRef} 
+        />
+      )}
     <group position={[0,0.,0.3]} scale={1} ref={mapRef}>
      <axesHelper args={[10]}/>
        <mesh 
      renderOrder={100} 
-   
+     onPointerDown={onPointerDownHandler}
+     onPointerUp={onPointerUpHandler}
+     onPointerMove={onPointerMoveHandler}   
+     onPointerOver={() => setIsHovered(true)}
+     onPointerOut={() => setIsHovered(false)}
      >
         <planeGeometry args={[dimensions?.width, dimensions?.height,100 , 100]} />
         <shaderMaterial
+          ref={materialRef}
           vertexShader={vertexMapShader}
          
           fragmentShader={fragmentMapShader}
