@@ -146,6 +146,7 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
           pointerUv={pointerUv} 
           isHovered={isHovered}
           mapMaterialRef={materialRef} 
+          aspect={size.width / size.height}
         />
       )}
     <group position={[0,0.,0.3]} scale={1} ref={mapRef}>
@@ -170,19 +171,7 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
         />
         {/* <meshStandardMaterial color={'red'}/> */}
       </mesh>
-        {pins.map((pin) => (
-            <Pin
-              key={pin.id}
-              title={pin.title}
-              radius={pin.radius ?? 0.03}
-              color={pin.color ?? 'white'}
-              position={toPlanePos(
-                pin.u,
-                pin.v,
-                pin.z ?? 0.05
-              ) as [number,number,number]}
-            />
-          ))}
+       
     </group>
     
     </>

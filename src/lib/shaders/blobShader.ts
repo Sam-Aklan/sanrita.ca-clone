@@ -25,6 +25,7 @@ uniform float uTime;
 uniform float uBlobSize;
 
 uniform sampler2D uHeightMap;
+uniform float uAspect;
 
 varying vec2 vUv;
 
@@ -92,7 +93,11 @@ for(int i = 0; i < STEPS; i++)
     vec2 distortion = vec2(noise1, noise2) * h * 0.01; // More distortion on higher terrain
     localUV += distortion;
 
+    // Correct aspect ratio so blob remains circular
+    localUV.x *= uAspect;
+
     vec2 vel = uMouseVelocity;
+    vel.x *= uAspect; // Correct aspect ratio of velocity
     float speed = length(vel);
     vec2 dir = normalize(vel + 1e-5);
 
@@ -118,19 +123,30 @@ for(int i = 0; i < STEPS; i++)
 
     float threshold = mix(1.25, 0.7, clamp(speed * 2.0, 0.0, 1.0));
 
-    // Create neon border
+    // Create neon border (thin and sharp)
     float outer = smoothstep(threshold, threshold + 0.15, r);
     float inner = smoothstep(threshold + 0.15, threshold + 0.3, r);
     float border = outer - inner;
 
+    // ADJUST GLOW HERE:
+    // - Change the offsets in smoothstep to expand/contract the glow width (e.g., -0.4 and +0.6)
+    // - Change the multiplier (e.g., 0.4) to adjust glow brightness/intensity
+    float outerGlow = smoothstep(threshold - 0.4, threshold + 0.1, r);
+    float innerGlow = smoothstep(threshold + 0.2, threshold + 0.6, r);
+    float borderGlow = (outerGlow - innerGlow) * 0.4;
+
     // Create grid lines inside the transparent core (using continuous symmetric distance to avoid aliasing)
-    vec2 gridVal = abs(fract((uv + distortion) * 30.0) - 0.5);
+    // Scale X-coordinate by uAspect to ensure grid cells remain square
+    vec2 gridCoords = uv + distortion;
+    gridCoords.x *= uAspect;
+    vec2 gridVal = abs(fract(gridCoords * 30.0) - 0.5);
     float thickness = 0.04;
     float edgeX = smoothstep(0.5 - thickness, 0.5, gridVal.x);
     float edgeY = smoothstep(0.5 - thickness, 0.5, gridVal.y);
     float gridLine = max(edgeX, edgeY);
 
-    float blob = max(border, gridLine * inner * 0.8);
+    // Combine border, soft glow, and grid lines
+    float blob = max(max(border, borderGlow), gridLine * inner * 0.8);
 
     shape = max(shape, blob);
 }

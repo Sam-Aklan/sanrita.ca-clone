@@ -10,6 +10,7 @@ type BlobSimulationProps = {
   pointerUv: THREE.Vector2;
   isHovered: boolean;
   mapMaterialRef: React.RefObject<THREE.ShaderMaterial | null>;
+  aspect?: number;
 };
 
 export const BlobSimulation = ({
@@ -18,6 +19,7 @@ export const BlobSimulation = ({
   pointerUv,
   isHovered,
   mapMaterialRef,
+  aspect = 1.0,
 }: BlobSimulationProps) => {
   const fbo1 = useFBO(resolution, resolution, {
     minFilter: THREE.LinearFilter,
@@ -47,6 +49,7 @@ export const BlobSimulation = ({
     uBlobSize: { value: 0.03 },
     uPrevTrail: { value: fbo1.texture },
     uHeightMap: { value: heightMap },
+    uAspect: { value: 1.0 },
   });
 
   const material = useMemo(
@@ -76,6 +79,7 @@ export const BlobSimulation = ({
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     uniforms.current.uTime.value = time;
+    uniforms.current.uAspect.value = aspect;
 
     // Update Mouse
     const prevMouse = uniforms.current.uMouse.value.clone();
