@@ -11,6 +11,8 @@ type BlobSimulationProps = {
   isHovered: boolean;
   mapMaterialRef: React.RefObject<THREE.ShaderMaterial | null>;
   aspect?: number;
+  mapRef: React.RefObject<THREE.Group | null>;
+  dimensions: { width?: number; height?: number };
 };
 
 export const BlobSimulation = ({
@@ -20,6 +22,8 @@ export const BlobSimulation = ({
   isHovered,
   mapMaterialRef,
   aspect = 1.0,
+  mapRef,
+  dimensions,
 }: BlobSimulationProps) => {
   const fbo1 = useFBO(resolution, resolution, {
     minFilter: THREE.LinearFilter,
@@ -81,17 +85,75 @@ export const BlobSimulation = ({
     uniforms.current.uTime.value = time;
     uniforms.current.uAspect.value = aspect;
 
+    // 1. Project the mouse coordinate onto the infinite map plane
+    let targetMouse = pointerUv;
+    let hasProjected = false;
+
+    if (mapRef.current && dimensions.width && dimensions.height && state.raycaster && state.raycaster.ray) {
+      // Get world Z of the map plane
+      const worldPos = new THREE.Vector3();
+      mapRef.current.getWorldPosition(worldPos);
+      const worldZ = worldPos.z;
+
+      // Define the infinite plane parallel to XY at world Z
+      const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -worldZ);
+      const intersectPoint = new THREE.Vector3();
+      
+      if (state.raycaster.ray.intersectPlane(plane, intersectPoint)) {
+        // Convert world intersection to map's local space
+        const localPoint = intersectPoint.clone();
+        mapRef.current.worldToLocal(localPoint);
+
+        // Convert local coordinates to UV space [0, 1]
+        const u = (localPoint.x / dimensions.width) + 0.5;
+        const v = (localPoint.y / dimensions.height) + 0.5;
+        targetMouse = new THREE.Vector2(u, v);
+        hasProjected = true;
+      }
+    }
+
     // Update Mouse
     const prevMouse = uniforms.current.uMouse.value.clone();
     uniforms.current.uPrevMouse.value.copy(prevMouse);
-    uniforms.current.uMouse.value.copy(pointerUv);
+    
+    const currentMouse = uniforms.current.uMouse.value;
 
-    // Calculate Velocity
-    const velocity = new THREE.Vector2().subVectors(pointerUv, prevMouse);
+    // Smoothly interpolate the mouse position to avoid frame-rate mismatch jitter
+    if (currentMouse.x < 0.0 || targetMouse.x < 0.0) {
+      currentMouse.copy(targetMouse);
+    } else {
+      currentMouse.lerp(targetMouse, 0.18); // Smoothly slide towards target coordinates
+    }
+
+    // Calculate Velocity based on the smoothed coordinates
+    const velocity = new THREE.Vector2().subVectors(currentMouse, prevMouse);
+    
+    // Clamp the velocity to prevent excessive distortion when moving very fast
+    const maxVelocity = 0.01; // Maximum displacement in UV space per frame
+    if (velocity.length() > maxVelocity) {
+      velocity.setLength(maxVelocity);
+    }
+    
     uniforms.current.uMouseVelocity.value.copy(velocity);
 
-    // Update Pressure based on hover
-    uniforms.current.uMousePressure.value = isHovered ? 1.0 : 0.0;
+    // Calculate uMousePressure based on distance of targetMouse to the map boundaries [0, 1]
+    let pressure = 0.0;
+    if (hasProjected) {
+      const distToBox = Math.max(
+        0,
+        -targetMouse.x,
+        targetMouse.x - 1.0,
+        -targetMouse.y,
+        targetMouse.y - 1.0
+      );
+      // Smoothly fade pressure from 1.0 down to 0.0 over a margin of 0.15 UV units outside the map
+      pressure = THREE.MathUtils.clamp(1.0 - distToBox / 0.15, 0.0, 1.0);
+    } else {
+      pressure = isHovered ? 1.0 : 0.0;
+    }
+
+    // Update pressure uniform
+    uniforms.current.uMousePressure.value = pressure;
 
     // Swap FBOs
     const readFBO = activeFBO === fbo1 ? fbo2 : fbo1;

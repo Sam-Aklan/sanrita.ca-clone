@@ -135,18 +135,36 @@ for(int i = 0; i < STEPS; i++)
     float innerGlow = smoothstep(threshold + 0.2, threshold + 0.6, r);
     float borderGlow = (outerGlow - innerGlow) * 0.4;
 
-    // Create grid lines inside the transparent core (using continuous symmetric distance to avoid aliasing)
+    // Create grid lines inside the transparent core
     // Scale X-coordinate by uAspect to ensure grid cells remain square
     vec2 gridCoords = uv + distortion;
     gridCoords.x *= uAspect;
-    vec2 gridVal = abs(fract(gridCoords * 30.0) - 0.5);
-    float thickness = 0.04;
-    float edgeX = smoothstep(0.5 - thickness, 0.5, gridVal.x);
-    float edgeY = smoothstep(0.5 - thickness, 0.5, gridVal.y);
+
+    // Calculate distance to the nearest grid line (0.0 is on the line, 0.5 is the center of the cell)
+    vec2 distToLine = abs(fract(gridCoords * 30.0 + 0.5) - 0.5);
+
+    // Convert distance to pixel space to ensure resolution-independent thickness and continuity
+    vec2 pixelStep = (30.0 / uResolution) * vec2(uAspect, 1.0);
+    vec2 distInPixels = distToLine / pixelStep;
+
+    // =========================================================================
+    // ADJUST GRIDLINE CONFIGURATION HERE:
+    // - uGridLineWidth: Width of the solid core of the lines in pixels (e.g. 0.1 to 1.0).
+    //                   Decrease to make lines thinner; increase to make them thicker.
+    // - uGridLineFeather: Width of the anti-aliasing edge in pixels (e.g. 1.0 to 1.5).
+    //                     Must be at least 1.0 to guarantee line continuity (prevent dotting).
+    // - uGridLineIntensity: Overall brightness/opacity multiplier for the gridlines (e.g. 0.5 to 2.0).
+    // =========================================================================
+    float uGridLineWidth = .1;     // Solid line width in pixels (decrease for thinner lines)
+    float uGridLineFeather = 1.2;   // Anti-aliasing edge in pixels (prevents lines from dotting/breaking up)
+    float uGridLineIntensity = .3; // Gridline brightness/opacity multiplier
+
+    float edgeX = 1.0 - smoothstep(uGridLineWidth, uGridLineWidth + uGridLineFeather, distInPixels.x);
+    float edgeY = 1.0 - smoothstep(uGridLineWidth, uGridLineWidth + uGridLineFeather, distInPixels.y);
     float gridLine = max(edgeX, edgeY);
 
     // Combine border, soft glow, and grid lines
-    float blob = max(max(border, borderGlow), gridLine * inner * 0.8);
+    float blob = max(max(border, borderGlow), gridLine * inner * uGridLineIntensity);
 
     shape = max(shape, blob);
 }
