@@ -89,7 +89,7 @@ for(int i = 0; i < STEPS; i++)
     // Distort localUV wildly based on height and time
     float noise1 = snoise(uv * 15.0 + uTime * 2.0);
     float noise2 = snoise(uv * 15.0 - uTime * 2.0 + 100.0);
-    vec2 distortion = vec2(noise1, noise2) * h * 0.15; // More distortion on higher terrain
+    vec2 distortion = vec2(noise1, noise2) * h * 0.01; // More distortion on higher terrain
     localUV += distortion;
 
     vec2 vel = uMouseVelocity;
@@ -102,7 +102,8 @@ for(int i = 0; i < STEPS; i++)
     vec2 offset4 = vec2(dir.y, -dir.x) * speed * 1.5;
 
     float baseMass = mix(0.6, 2.2, uMousePressure);
-    float mass = baseMass * uBlobSize;
+    // ADJUST BLOB SIZE HERE: Change the multiplier (e.g., 0.7) to scale the overall blob size
+    float mass = baseMass * uBlobSize * 0.1;
 
     float r = 0.0;
 
@@ -117,7 +118,19 @@ for(int i = 0; i < STEPS; i++)
 
     float threshold = mix(1.25, 0.7, clamp(speed * 2.0, 0.0, 1.0));
 
-    float blob = smoothstep(threshold, threshold + 0.25, r);
+    // Create neon border
+    float outer = smoothstep(threshold, threshold + 0.15, r);
+    float inner = smoothstep(threshold + 0.15, threshold + 0.3, r);
+    float border = outer - inner;
+
+    // Create grid lines inside the transparent core (using continuous symmetric distance to avoid aliasing)
+    vec2 gridVal = abs(fract((uv + distortion) * 30.0) - 0.5);
+    float thickness = 0.04;
+    float edgeX = smoothstep(0.5 - thickness, 0.5, gridVal.x);
+    float edgeY = smoothstep(0.5 - thickness, 0.5, gridVal.y);
+    float gridLine = max(edgeX, edgeY);
+
+    float blob = max(border, gridLine * inner * 0.8);
 
     shape = max(shape, blob);
 }
