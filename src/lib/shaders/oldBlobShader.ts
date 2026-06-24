@@ -1,4 +1,4 @@
-const vertexBlobShader = /*glsl*/`
+export const vertexBlobShader = /*glsl*/`
 varying vec2 vUv;
 
 void main() {
@@ -9,7 +9,7 @@ void main() {
 
 `
 
-const fragmentBlobShader = /*glsl*/`
+export const fragmentBlobShader = /*glsl*/`
 precision mediump float;
 
 uniform vec2 uResolution;

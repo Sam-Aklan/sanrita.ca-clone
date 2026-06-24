@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { useCallback, useEffect,useMemo,useRef, useState } from 'react';
-import {Environment, OrbitControls, PerspectiveCamera, useTexture} from "@react-three/drei";
+import {Environment, PerspectiveCamera, useTexture} from "@react-three/drei";
 import { useThree, type ThreeEvent } from '@react-three/fiber';
 import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShader';
 import type { PerspectiveCamera as CameraType } from 'three'
@@ -49,6 +49,21 @@ const last = useRef([0,0])
     const [pointerUv, setPointerUv] = useState(new THREE.Vector2(-1, -1));
     const [isHovered, setIsHovered] = useState(false);
 
+    // Calculate which pin is currently hovered based on UV distance
+    const hoveredPinId = useMemo(() => {
+      if (!isHovered || pointerUv.x < 0.0) return null;
+      for (const pin of pins) {
+        const dx = pointerUv.x - pin.u;
+        const dy = pointerUv.y - pin.v;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        // Hover tolerance is 1.5x the pin's physical radius for comfortable interaction
+        if (dist < (pin.radius ?? 0.03) * 1.5) {
+          return pin.id;
+        }
+      }
+      return null;
+    }, [pointerUv, isHovered]);
+
     useEffect(()=>{
 
       if(!heightMap || !mountain) return
@@ -83,21 +98,19 @@ const last = useRef([0,0])
   v:number,
   z:number=0.05
   )=>{
-      
-  // const x = roundUp((u / dimensions.width) + 0.5);
-  // const y = roundUp((v / dimensions.height) + .5);
-   const x = (u - 0.5) * dimensions.width
-    const y = (v - 0.5) * dimensions.height
+    const width = dimensions.width ?? 0;
+    const height = dimensions.height ?? 0;
+    const x = (u - 0.5) * width;
+    const y = (v - 0.5) * height;
 
-  return [x, y,z]
-
-    },[dimensions])
+    return [x, y, z];
+  },[dimensions])
 
 const onPointerDownHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
  dragging.current = true;
  last.current = [e.clientX, e.clientY]
 },[])
-const onPointerUpHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
+const onPointerUpHandler = useCallback(()=>{
 dragging.current = false;
 },[])
 const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
@@ -185,6 +198,7 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
                 pin.v,
                 pin.z ?? 0.05
               ) as [number,number,number]}
+              hovered={hoveredPinId === pin.id}
             />
           ))}
        
