@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, createPortal } from '@react-three/fiber';
 import { useFBO } from '@react-three/drei';
 import { useMemo, useRef, useState } from 'react';
 import { fragmentBlobShader, vertexBlobShader } from '../lib/shaders/blobShader';

@@ -108,7 +108,7 @@ for(int i = 0; i < STEPS; i++)
 
     float baseMass = mix(0.6, 2.2, uMousePressure);
     // ADJUST BLOB SIZE HERE: Change the multiplier (e.g., 0.7) to scale the overall blob size
-    float mass = baseMass * uBlobSize * 0.1;
+    float mass = baseMass * uBlobSize * 0.05;
 
     float r = 0.0;
 
@@ -156,7 +156,7 @@ for(int i = 0; i < STEPS; i++)
     // - uGridLineIntensity: Overall brightness/opacity multiplier for the gridlines (e.g. 0.5 to 2.0).
     // =========================================================================
     float uGridLineWidth = .1;     // Solid line width in pixels (decrease for thinner lines)
-    float uGridLineFeather = 1.2;   // Anti-aliasing edge in pixels (prevents lines from dotting/breaking up)
+    float uGridLineFeather = .5;   // Anti-aliasing edge in pixels (prevents lines from dotting/breaking up)
     float uGridLineIntensity = .3; // Gridline brightness/opacity multiplier
 
     float edgeX = 1.0 - smoothstep(uGridLineWidth, uGridLineWidth + uGridLineFeather, distInPixels.x);
