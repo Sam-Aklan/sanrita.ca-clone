@@ -10,7 +10,7 @@ void main() {
 `
 
 const fragmentBlobShader = /*glsl*/`
-precision mediump float;
+precision highp float;
 
 uniform vec2 uResolution;
 uniform vec2 uMouse;
@@ -58,118 +58,102 @@ float snoise(vec2 v){
   return 130.0 * dot(m, g);
 }
 
-// ===== METABALL FUNCTION (from blob shader) =====
-float metaball(vec2 p, float r)
+// ===== METABALL HELPER (potential and gradient) =====
+void addMetaball(vec2 p, float mass, inout float r, inout vec2 grad)
 {
-    return r / dot(p, p);
+    float d2 = dot(p, p) + 1e-8;
+    float potential = mass / d2;
+    r += potential;
+    grad += -2.0 * potential * p / d2;
 }
 
 float blobShape(vec2 uv)
 {
-   
-  const int STEPS = 5;
-
-float shape = 0.0;
-
-for(int i = 0; i < STEPS; i++)
-{
-    float t = float(i) / float(STEPS - 1);
-
-    vec2 interpMouse = mix(uPrevMouse, uMouse, t);
-
-    vec2 mouse = interpMouse; // UV space is 0 to 1, no need to remap to -1,1
-    // mouse.x *= uResolution.x / uResolution.y;
-
-    vec2 localUV = uv - mouse;
-
-    // Height map integration (Option C - Noise/Distortion)
+    // 1. Height map integration & distortion
     float h = texture2D(uHeightMap, uv).r;
-    h = smoothstep(0.03, 0.45, h); // Adjust height reading
+    h = smoothstep(0.03, 0.45, h);
     h = pow(h, 1.6);
     
-    // Distort localUV wildly based on height and time
     float noise1 = snoise(uv * 15.0 + uTime * 2.0);
     float noise2 = snoise(uv * 15.0 - uTime * 2.0 + 100.0);
-    vec2 distortion = vec2(noise1, noise2) * h * 0.01; // More distortion on higher terrain
-    localUV += distortion;
+    vec2 distortion = vec2(noise1, noise2) * h * 0.01;
 
-    // Correct aspect ratio so blob remains circular
-    localUV.x *= uAspect;
-
-    vec2 vel = uMouseVelocity;
-    vel.x *= uAspect; // Correct aspect ratio of velocity
-    float speed = length(vel);
-    vec2 dir = normalize(vel + 1e-5);
-
-    vec2 offset1 = dir * speed * 2.5;
-    vec2 offset2 = vec2(-dir.y, dir.x) * speed * 1.8;
-    vec2 offset3 = -dir * speed * 2.0;
-    vec2 offset4 = vec2(dir.y, -dir.x) * speed * 1.5;
-
-    float baseMass = mix(0.6, 2.2, uMousePressure);
-    // ADJUST BLOB SIZE HERE: Change the multiplier (e.g., 0.7) to scale the overall blob size
-    float mass = baseMass * uBlobSize * 0.05;
-
-    float r = 0.0;
-
-    r += metaball(localUV, 0.9 * mass);
-    r += metaball(localUV - offset1, 0.45 * mass);
-    r += metaball(localUV - offset2, 0.35 * mass);
-    r += metaball(localUV - offset3, 0.4 * mass);
-    r += metaball(localUV - offset4, 0.3 * mass);
-
-    float turbulence = sin(dot(localUV, dir * 6.0) + speed * 8.0) * 0.08;
-    r += turbulence;
-
-    float threshold = mix(1.25, 0.7, clamp(speed * 2.0, 0.0, 1.0));
-
-    // Create neon border (thin and sharp)
-    float outer = smoothstep(threshold, threshold + 0.15, r);
-    float inner = smoothstep(threshold + 0.15, threshold + 0.3, r);
-    float border = outer - inner;
-
-    // ADJUST GLOW HERE:
-    // - Change the offsets in smoothstep to expand/contract the glow width (e.g., -0.4 and +0.6)
-    // - Change the multiplier (e.g., 0.4) to adjust glow brightness/intensity
-    float outerGlow = smoothstep(threshold - 0.4, threshold + 0.1, r);
-    float innerGlow = smoothstep(threshold + 0.2, threshold + 0.6, r);
-    float borderGlow = (outerGlow - innerGlow) * 0.4;
-
-    // Create grid lines inside the transparent core
-    // Scale X-coordinate by uAspect to ensure grid cells remain square
+    // 2. Compute grid lines once (they don't depend on the mouse step)
     vec2 gridCoords = uv + distortion;
     gridCoords.x *= uAspect;
 
-    // Calculate distance to the nearest grid line (0.0 is on the line, 0.5 is the center of the cell)
     vec2 distToLine = abs(fract(gridCoords * 30.0 + 0.5) - 0.5);
-
-    // Convert distance to pixel space to ensure resolution-independent thickness and continuity
     vec2 pixelStep = (30.0 / uResolution) * vec2(uAspect, 1.0);
-    vec2 distInPixels = distToLine / pixelStep;
+    vec2 distInPixelsGrid = distToLine / pixelStep;
 
-    // =========================================================================
-    // ADJUST GRIDLINE CONFIGURATION HERE:
-    // - uGridLineWidth: Width of the solid core of the lines in pixels (e.g. 0.1 to 1.0).
-    //                   Decrease to make lines thinner; increase to make them thicker.
-    // - uGridLineFeather: Width of the anti-aliasing edge in pixels (e.g. 1.0 to 1.5).
-    //                     Must be at least 1.0 to guarantee line continuity (prevent dotting).
-    // - uGridLineIntensity: Overall brightness/opacity multiplier for the gridlines (e.g. 0.5 to 2.0).
-    // =========================================================================
     float uGridLineWidth = .1;     // Solid line width in pixels (decrease for thinner lines)
-    float uGridLineFeather = .5;   // Anti-aliasing edge in pixels (prevents lines from dotting/breaking up)
+    float uGridLineFeather = .5;   // Anti-aliasing edge in pixels
     float uGridLineIntensity = .3; // Gridline brightness/opacity multiplier
 
-    float edgeX = 1.0 - smoothstep(uGridLineWidth, uGridLineWidth + uGridLineFeather, distInPixels.x);
-    float edgeY = 1.0 - smoothstep(uGridLineWidth, uGridLineWidth + uGridLineFeather, distInPixels.y);
+    float edgeX = 1.0 - smoothstep(uGridLineWidth, uGridLineWidth + uGridLineFeather, distInPixelsGrid.x);
+    float edgeY = 1.0 - smoothstep(uGridLineWidth, uGridLineWidth + uGridLineFeather, distInPixelsGrid.y);
     float gridLine = max(edgeX, edgeY);
+
+    // 3. Draw a single metaball at the current mouse position (uMouse)
+    vec2 localUV = uv - uMouse;
+    localUV += distortion;
+    localUV.x *= uAspect;
+
+    float totalR = 0.0;
+    vec2 totalGrad = vec2(0.0);
+
+    vec2 vel = uMouseVelocity;
+    vel.x *= uAspect;
+    float speed = length(vel);
+    vec2 dir = normalize(vel + 1e-5);
+
+    float baseMass = mix(0.6, 2.2, uMousePressure);
+    float mass = baseMass * uBlobSize * 0.05;
+
+    // Draw a single unified metaball (increased mass to maintain original size)
+    addMetaball(localUV, 2.2 * mass, totalR, totalGrad);
+
+    float phase = dot(localUV, dir * 6.0) + speed * 8.0;
+    float turbulence = sin(phase) * 0.08;
+    totalR += turbulence;
+    totalGrad += cos(phase) * 0.08 * (dir * 6.0);
+
+    float threshold = mix(1.25, 0.7, clamp(speed * 2.0, 0.0, 1.0));
+
+    // Convert gradient to original UV space for isotropic distance estimation
+    vec2 uvGrad = vec2(totalGrad.x * uAspect, totalGrad.y);
+    float gradLen = max(length(uvGrad), 0.1); // Capped to avoid division by zero/overflow
+    float distInPixels = (totalR - threshold) / gradLen * uResolution.y;
+
+    // Smoothly transition to the exact geometric distance inside the metaball core
+    // to eliminate the numerical gradient singularity artifact at the center.
+    float distInPixelsExact = (sqrt(2.2 * mass / max(0.01, threshold - turbulence)) - length(localUV)) * uResolution.y;
+    float insideFactor = smoothstep(threshold, threshold + 0.5, totalR);
+    distInPixels = mix(distInPixels, distInPixelsExact, insideFactor);
+
+    // Create neon border (thin and sharp, width in pixels)
+    // ADJUST BORDER WIDTH HERE:
+    // - borderWidthInPixels: Thickness of the sharp border in pixels (e.g. 1.0 to 3.0)
+    float borderWidthInPixels = 1.0;
+    float halfWidth = borderWidthInPixels * 0.5;
+    // Use feather = 1.5 or larger for high-quality anti-aliasing to keep the border smooth and continuous when upscaled
+    float feather = 1.5; 
+    float border = smoothstep(halfWidth + feather, halfWidth - feather, abs(distInPixels));
+
+    // Mask for gridlines (inside the blob core, transitions at the inner edge of the border)
+    float inner = smoothstep(halfWidth - feather, halfWidth + feather, distInPixels);
+
+    // ADJUST GLOW HERE:
+    // - glowWidth: Width of the soft glow in pixels (e.g., 6.0 to 15.0)
+    // - glowIntensity: Brightness/intensity of the glow (e.g., 0.2 to 0.6)
+    float glowWidth = 10.0;
+    float glowIntensity = 0.35;
+    float borderGlow = exp(-abs(distInPixels) / glowWidth) * glowIntensity;
 
     // Combine border, soft glow, and grid lines
     float blob = max(max(border, borderGlow), gridLine * inner * uGridLineIntensity);
 
-    shape = max(shape, blob);
-}
-
-return shape;
+    return blob;
 }
 
 void main()

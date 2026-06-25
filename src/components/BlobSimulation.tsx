@@ -16,7 +16,7 @@ type BlobSimulationProps = {
 };
 
 export const BlobSimulation = ({
-  resolution = 512,
+  resolution = 1024,
   heightMap,
   pointerUv,
   isHovered,
