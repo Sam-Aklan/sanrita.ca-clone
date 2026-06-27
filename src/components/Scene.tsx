@@ -63,6 +63,18 @@ const last = useRef([0,0])
     }, []);
 
     const isOverPin = hoveredPins.size > 0;
+    const [isDragging, setIsDragging] = useState(false);
+
+    useEffect(() => {
+      const handleGlobalPointerUp = () => {
+        dragging.current = false;
+        setIsDragging(false);
+      };
+      window.addEventListener('pointerup', handleGlobalPointerUp);
+      return () => {
+        window.removeEventListener('pointerup', handleGlobalPointerUp);
+      };
+    }, []);
 
     useEffect(()=>{
 
@@ -110,10 +122,12 @@ const last = useRef([0,0])
 
 const onPointerDownHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
  dragging.current = true;
+ setIsDragging(true);
  last.current = [e.clientX, e.clientY]
 },[])
 const onPointerUpHandler = useCallback((_e:ThreeEvent<PointerEvent>)=>{
  dragging.current = false;
+ setIsDragging(false);
 },[])
 const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
 
@@ -160,7 +174,7 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
           heightMap={heightMap} 
           pointerUv={pointerUv} 
           isHovered={isHovered}
-          isOverPin={isOverPin}
+          isOverPin={isOverPin || isDragging}
           mapMaterialRef={materialRef} 
           aspect={size.width / size.height}
           mapRef={mapRef}
