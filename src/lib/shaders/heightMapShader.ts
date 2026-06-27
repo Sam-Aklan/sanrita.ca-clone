@@ -62,13 +62,16 @@ void main(){
 
     // ===== NEON BLOB GLOW =====
     vec4 blobData = texture2D(uBlobTexture, vUv);
-    float pigment = blobData.r;
+    float glowPigment = blobData.r;
+    float borderPigment = blobData.b;
     
     // Glowing neon color (e.g., bright cyan/blue)
-    vec3 neonColor = vec3(0.0, 1.0, 0.9); // Cyan
+    vec3 neonGlowColor = vec3(0.0, 0.7, 1.0); // Saturated neon cyan/blue
+    vec3 neonBorderColor = vec3(0.85, 1.0, 1.0); // Extremely bright, almost white core!
     
     // Add glowing effect (additive blending)
-    color += neonColor * pigment * 2.0; 
+    // The border is composited with higher intensity so it remains crisp and distinguishable
+    color += neonGlowColor * glowPigment * 1.8 + neonBorderColor * borderPigment * 4.0; 
 
     gl_FragColor = vec4(color * light,1.0);
 }

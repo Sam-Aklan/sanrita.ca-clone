@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { useFrame, createPortal } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import { useFBO } from '@react-three/drei';
 import { useMemo, useRef, useState } from 'react';
 import { fragmentBlobShader, vertexBlobShader } from '../lib/shaders/blobShader';
@@ -9,6 +9,7 @@ type BlobSimulationProps = {
   heightMap: THREE.Texture;
   pointerUv: THREE.Vector2;
   isHovered: boolean;
+  isOverPin: boolean;
   mapMaterialRef: React.RefObject<THREE.ShaderMaterial | null>;
   aspect?: number;
   mapRef: React.RefObject<THREE.Group | null>;
@@ -20,6 +21,7 @@ export const BlobSimulation = ({
   heightMap,
   pointerUv,
   isHovered,
+  isOverPin,
   mapMaterialRef,
   aspect = 1.0,
   mapRef,
@@ -54,6 +56,7 @@ export const BlobSimulation = ({
     uPrevTrail: { value: fbo1.texture },
     uHeightMap: { value: heightMap },
     uAspect: { value: 1.0 },
+    uPinHover: { value: 0.0 },
   });
 
   const material = useMemo(
@@ -84,6 +87,14 @@ export const BlobSimulation = ({
     const time = state.clock.getElapsedTime();
     uniforms.current.uTime.value = time;
     uniforms.current.uAspect.value = aspect;
+
+    // Smoothly interpolate the pin hover state (0.0 to 1.0)
+    const targetPinHover = isOverPin ? 1.0 : 0.0;
+    uniforms.current.uPinHover.value = THREE.MathUtils.lerp(
+      uniforms.current.uPinHover.value,
+      targetPinHover,
+      0.15
+    );
 
     // 1. Project the mouse coordinate onto the infinite map plane
     let targetMouse = pointerUv;

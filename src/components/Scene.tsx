@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { useCallback, useEffect,useMemo,useRef, useState } from 'react';
-import {Environment, OrbitControls, PerspectiveCamera, useTexture} from "@react-three/drei";
+import {Environment, PerspectiveCamera, useTexture} from "@react-three/drei";
 import { useThree, type ThreeEvent } from '@react-three/fiber';
 import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShader';
 import type { PerspectiveCamera as CameraType } from 'three'
@@ -48,6 +48,21 @@ const last = useRef([0,0])
     const {size}= useThree()
     const [pointerUv, setPointerUv] = useState(new THREE.Vector2(-1, -1));
     const [isHovered, setIsHovered] = useState(false);
+    const [hoveredPins, setHoveredPins] = useState<Set<number>>(new Set());
+
+    const handlePinHover = useCallback((id: number, hovered: boolean) => {
+      setHoveredPins((prev) => {
+        const next = new Set(prev);
+        if (hovered) {
+          next.add(id);
+        } else {
+          next.delete(id);
+        }
+        return next;
+      });
+    }, []);
+
+    const isOverPin = hoveredPins.size > 0;
 
     useEffect(()=>{
 
@@ -86,8 +101,8 @@ const last = useRef([0,0])
       
   // const x = roundUp((u / dimensions.width) + 0.5);
   // const y = roundUp((v / dimensions.height) + .5);
-   const x = (u - 0.5) * dimensions.width
-    const y = (v - 0.5) * dimensions.height
+   const x = (u - 0.5) * (dimensions.width ?? 0);
+   const y = (v - 0.5) * (dimensions.height ?? 0);
 
   return [x, y,z]
 
@@ -97,8 +112,8 @@ const onPointerDownHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
  dragging.current = true;
  last.current = [e.clientX, e.clientY]
 },[])
-const onPointerUpHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
-dragging.current = false;
+const onPointerUpHandler = useCallback((_e:ThreeEvent<PointerEvent>)=>{
+ dragging.current = false;
 },[])
 const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
 
@@ -129,8 +144,8 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
      onChange={(e)=>{
 
        if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
-    }}
-     />  */}
+     }}
+      />  */}
      <PerspectiveCamera
         makeDefault
         near={0.1}
@@ -145,6 +160,7 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
           heightMap={heightMap} 
           pointerUv={pointerUv} 
           isHovered={isHovered}
+          isOverPin={isOverPin}
           mapMaterialRef={materialRef} 
           aspect={size.width / size.height}
           mapRef={mapRef}
@@ -185,6 +201,7 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
                 pin.v,
                 pin.z ?? 0.05
               ) as [number,number,number]}
+              onHoverChange={(hovered) => handlePinHover(pin.id, hovered)}
             />
           ))}
        

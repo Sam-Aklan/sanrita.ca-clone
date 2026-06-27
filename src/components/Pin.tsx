@@ -7,14 +7,16 @@ type PinType ={
     radius:number,
     color?:string,
     image?:string,
+    onHoverChange?: (hovered: boolean) => void,
 }
 
-function Pin({ position, title, image, radius, color }: PinType) {
+function Pin({ position, title, image, radius, color, onHoverChange }: PinType) {
   const [hovered, setHovered] = useState(false)
   const hoverTimeoutRef = useRef<number | null>(null)
 
   const handlePointerOver = () => {
     if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
+    onHoverChange?.(true)
     // Wait 150ms before showing the tooltip to filter out transient/fast sweeps
     hoverTimeoutRef.current = window.setTimeout(() => {
       setHovered(true)
@@ -23,6 +25,7 @@ function Pin({ position, title, image, radius, color }: PinType) {
 
   const handlePointerOut = () => {
     if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
+    onHoverChange?.(false)
     // Wait 150ms before hiding to prevent abrupt flashing on quick leaves
     hoverTimeoutRef.current = window.setTimeout(() => {
       setHovered(false)

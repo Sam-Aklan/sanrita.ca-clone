@@ -26,6 +26,7 @@ uniform float uBlobSize;
 
 uniform sampler2D uHeightMap;
 uniform float uAspect;
+uniform float uPinHover;
 
 varying vec2 vUv;
 
@@ -67,7 +68,7 @@ void addMetaball(vec2 p, float mass, inout float r, inout vec2 grad)
     grad += -2.0 * potential * p / d2;
 }
 
-float blobShape(vec2 uv)
+vec3 blobShape(vec2 uv)
 {
     // 1. Height map integration & distortion
     float h = texture2D(uHeightMap, uv).r;
@@ -144,16 +145,14 @@ float blobShape(vec2 uv)
     float inner = smoothstep(halfWidth - feather, halfWidth + feather, distInPixels);
 
     // ADJUST GLOW HERE:
-    // - glowWidth: Width of the soft glow in pixels (e.g., 6.0 to 15.0)
-    // - glowIntensity: Brightness/intensity of the glow (e.g., 0.2 to 0.6)
-    float glowWidth = 10.0;
-    float glowIntensity = 0.35;
+    // - uPinHover: smoothly controls the transition when hovering over a pin.
+    // The glow width and intensity expand equally on both sides (inward and outward) of the border.
+    float glowWidth = mix(10.0, 12.0, uPinHover);
+    float glowIntensity = mix(0.35, 0.75, uPinHover);
+    
     float borderGlow = exp(-abs(distInPixels) / glowWidth) * glowIntensity;
 
-    // Combine border, soft glow, and grid lines
-    float blob = max(max(border, borderGlow), gridLine * inner * uGridLineIntensity);
-
-    return blob;
+    return vec3(border, borderGlow, gridLine * inner * uGridLineIntensity);
 }
 
 void main()
@@ -163,11 +162,13 @@ void main()
     vec4 prev = texture2D(uPrevTrail, vUv);
     float pigment = prev.r;
     float wetness = prev.g;
+    float borderPigment = prev.b;
 
     // ===== GLOW DECAY (Neon effect) =====
     float dryingRate = 0.015; // Faster decay for glowing trail
     wetness = max(prev.g - dryingRate, 0.0);
     pigment *= 0.92; // Fade out pigment
+    borderPigment *= 0.92; // Fade out border pigment
 
     // ===== MOTION =====
     vec2 mousePx = uMouse * uResolution;
@@ -186,8 +187,11 @@ float activeFactor = 1.0 - motionFade;
     // Only paint when blob exists (CRITICAL)
     if (uMousePressure > 0.01 || activeFactor > 0.05)
     {
-        // Sample metaball shape at this fragment
-        float shape = blobShape(vUv);
+        // Sample metaball shape components
+        vec3 shapeParts = blobShape(vUv);
+        float borderPart = shapeParts.x;
+        float glowPart = shapeParts.y;
+        float gridPart = shapeParts.z;
         
         // Velocity thinning (faster = thinner paint)
         float speedNorm = clamp(speed / 120.0, 0.0, 1.0);
@@ -196,21 +200,25 @@ float activeFactor = 1.0 - motionFade;
         // Pressure widening & wetness boost
         float pressureGain = mix(0.7, 1.8, .1);
 
-        shape *= velocityThin * pressureGain;
-
-        shape *= velocityThin * pressureGain;
+        borderPart *= velocityThin * pressureGain;
+        glowPart *= velocityThin * pressureGain;
+        gridPart *= velocityThin * pressureGain;
 
         // Neon Energy bloom
-        float bloom = smoothstep(0.1, 0.8, shape);
+        float bloom = smoothstep(0.1, 0.8, glowPart);
         bloom *= wetness * 0.4;
 
-        float stroke = max(shape, bloom);
+        float strokeGlow = max(max(glowPart, gridPart), bloom);
 
-        // Deposit pigment (PERMANENT MEMORY)
-        pigment = max(pigment, stroke);
+        // Deposit glow pigment (Red channel)
+        pigment = max(pigment, strokeGlow);
 
-        // Deposit wetness (fluid behavior)
-        float wetDeposit = stroke * (1.5 + uMousePressure * 1.5);
+        // Deposit border pigment (Blue channel)
+        borderPigment = max(borderPigment, borderPart);
+
+        // Deposit wetness (fluid behavior based on overall shape)
+        float strokeOverall = max(borderPart, glowPart);
+        float wetDeposit = strokeOverall * (1.5 + uMousePressure * 1.5);
         wetness = max(wetness, wetDeposit);
     }
 
@@ -230,8 +238,9 @@ float activeFactor = 1.0 - motionFade;
     }
 
     pigment = pow(pigment, 1.05);
+    borderPigment = pow(borderPigment, 1.05);
 
-    gl_FragColor = vec4(pigment, wetness, 0.0, 1.0);
+    gl_FragColor = vec4(pigment, wetness, borderPigment, 1.0);
    
 }
 
