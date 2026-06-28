@@ -8,15 +8,15 @@ import type { PerspectiveCamera as CameraType } from 'three'
 
 const Scene = () => {
   const cameraRef = useRef<CameraType>(null)
-    const [mountain, heightMap]= useTexture(['./Mountain-annonated.png','./height-map-optimaized.jpg']);
+    const [mountain, heightMap]= useTexture(['./mountain-sea/Mountain By Sea Heightmap Diffuse.jpg','./mountain-sea/Mountain By Sea Heightmap.png']);
 
    const sharedUniforms = useRef({
     uHeightMap: { value: heightMap },
   uColorMap: { value: mountain },
 
   uTexelSize: { value: new THREE.Vector2() },
-  uHeightScale: { value: 5},
-    uStrength: {value:1.},
+  uHeightScale: { value: 2},
+    uStrength: {value:.3},
   uLightDir: { value: new THREE.Vector3(1,1,1).normalize() }
    }).current;
 
