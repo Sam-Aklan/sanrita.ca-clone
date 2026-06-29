@@ -32,7 +32,7 @@ const Scene = () => {
   const dragging = useRef(false)
 const last = useRef([0,0])
 // textures
-    const [mountain, heightMap]= useTexture(['./Mountain-annonated.png','./height-map-optimaized.jpg']);
+    const [mountain, heightMap]= useTexture(['./mountain-sea/Mountain By Sea Heightmap Diffuse.jpg','./mountain-sea/Mountain By Sea Heightmap.png']);
 // uniforms
    const sharedUniforms = useRef({
     uHeightMap: { value: heightMap },
@@ -40,7 +40,7 @@ const last = useRef([0,0])
   uBlobTexture: { value: null }, // Added for blob simulation
 
   uTexelSize: { value: new THREE.Vector2() },
-  uHeightScale: { value: 20},
+  uHeightScale: { value: 2},
     uStrength: {value:.5},
   uLightDir: { value: new THREE.Vector3(1,1,1).normalize() }
    }).current;
@@ -145,8 +145,8 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
   mapRef.current.position.x += dx * 0.002
   mapRef.current.position.y -= dy * 0.002
 
-  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x,-.8,.5)
-  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y,-.43,.1)
+  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x,-0.8,.55)
+  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y,-1.,.28)
 
 },[])
 
@@ -164,7 +164,7 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
         makeDefault
         near={0.1}
         far={10000}
-        position={[0,0.,1.]}
+        position={[0,0.,2.]}
         aspect={size.width / size.height}
         fov={75}
         ref={cameraRef}
@@ -181,7 +181,7 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
           dimensions={dimensions}
         />
       )}
-    <group position={[0,0.,0.3]} scale={1} ref={mapRef}>
+    <group position={[0,0.,0.3]} scale={1} ref={mapRef} rotation={[-Math.PI/15,0,0]}>
      <axesHelper args={[10]}/>
        <mesh 
      renderOrder={100} 

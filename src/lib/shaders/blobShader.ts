@@ -77,7 +77,7 @@ vec3 blobShape(vec2 uv)
     
     float noise1 = snoise(uv * 15.0 + uTime * 2.0);
     float noise2 = snoise(uv * 15.0 - uTime * 2.0 + 100.0);
-    vec2 distortion = vec2(noise1, noise2) * h * 0.01;
+    vec2 distortion = vec2(noise1, noise2) * h* mix(.01,0.0001,h);
 
     // 2. Compute grid lines once (they don't depend on the mouse step)
     vec2 gridCoords = uv + distortion;
@@ -151,7 +151,7 @@ vec3 blobShape(vec2 uv)
     // - uPinHover: smoothly controls the transition when hovering over a pin.
     // The glow width and intensity expand equally on both sides (inward and outward) of the border.
     float glowWidth = mix(10.0, 12.0, uPinHover);
-    float glowIntensity = mix(0.35, 0.75, uPinHover);
+    float glowIntensity = mix(0.45, 1., uPinHover);
     
     float borderGlow = exp(-abs(distInPixels) / glowWidth) * glowIntensity;
 

@@ -52,7 +52,7 @@ void main(){
     vec3 lightDir = normalize(uLightDir);
 
     float light = dot(normalize(vec3(0.0,0.0,1.0)), lightDir);
-    light = light * 0.8 + 0.8; // increase or decrease lights
+    light = light * 0.5 + 0.5; // increase or decrease lights
 
     // terrain shading
     color *= mix(0.65, 1.35, vHeight);
