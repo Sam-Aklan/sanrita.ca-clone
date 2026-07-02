@@ -7,3 +7,20 @@ body{
 #root{
     @apply w-full h-screen min-h-screen
 }
+.image-wrapper > img{
+    -webkit-mask-image: 
+    linear-gradient(to right, black 70%, transparent 98%), /* Fades Right */
+    linear-gradient(to left, black 70%, transparent 98%),  /* Fades Left */
+    linear-gradient(to bottom, black 70%, transparent 98%),/* Fades Bottom */
+    linear-gradient(to top, black 70%, transparent 98%);   /* Fades Top */
+  
+  mask-image: 
+    linear-gradient(to right, black 70%, transparent 98%),
+    linear-gradient(to left, black 70%, transparent 98%),
+    linear-gradient(to bottom, black 70%, transparent 98%),
+    linear-gradient(to top, black 70%, transparent 98%);
+
+      -webkit-mask-composite: source-in; /* Safari support */
+      mask-composite: intersect;        /* Modern browsers: only show where both masks overlap */
+     
+}

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { useCallback, useEffect,useMemo,useRef, useState } from 'react';
-import {Environment, PerspectiveCamera, useTexture} from "@react-three/drei";
+import {Environment, OrbitControls, PerspectiveCamera, useTexture} from "@react-three/drei";
 import { useThree, type ThreeEvent } from '@react-three/fiber';
 import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShader';
 import type { PerspectiveCamera as CameraType } from 'three'
@@ -16,12 +16,14 @@ type PinData = {
   z?: number
   radius?: number
   color?: string
+  image?:string
 }
 const pins: PinData[] = [
-  { id: 1, title: 'port', u: 0.46, v: 0.40, z: 0.05, radius: 0.03, color: 'blue' },
-  { id: 2, title: 'harbour', u: 0.12, v: 0.55, z: 0.10, radius: 0.03, color: 'cyan' },
-  { id: 3, title: 'city', u: 0.483, v: 0.78, z: 0.10, radius: 0.03, color: 'pink' },
-  { id: 4, title: 'mountain', u: 0.829, v: 0.915, z: 0.38, radius: 0.03, color: 'red' },
+  { id: 1, title: 'port', u: 0.588, v: 0.46, z: 0.18, radius: 0.07, color: 'blue' },
+  { id: 2, title: 'harbour', u: 0.14, v: 0.39, z: 0.10, radius: 0.07, color: 'cyan', image:"./pics/fisher.jpg" },
+  { id: 3, title: 'city', u: 0.7, v: 0.73, z: 0.35, radius: 0.07, color: 'pink', image:"./pics/hut.jpg" },
+  { id: 4, title: 'mountain', u: 0.54, v: 0.245, z: 0.05, radius: 0.07, color: 'red', image:"./pics/viliage.jpg" },
+  { id: 5, title: 'diving', u: 0.31, v: 0.16, z: -0.002, radius: 0.07, color: 'green', },
 ]
 
 const Scene = () => {
@@ -32,7 +34,7 @@ const Scene = () => {
   const dragging = useRef(false)
 const last = useRef([0,0])
 // textures
-    const [mountain, heightMap]= useTexture(['./mountain-sea/Mountain By Sea Heightmap Diffuse.jpg','./mountain-sea/Mountain By Sea Heightmap.png']);
+    const [mountain, heightMap]= useTexture(['./mountain-sea/optimize-image.jpg','./mountain-sea/Mountain By Sea Heightmap.png']);
 // uniforms
    const sharedUniforms = useRef({
     uHeightMap: { value: heightMap },
@@ -40,8 +42,8 @@ const last = useRef([0,0])
   uBlobTexture: { value: null }, // Added for blob simulation
 
   uTexelSize: { value: new THREE.Vector2() },
-  uHeightScale: { value: 2},
-    uStrength: {value:.5},
+  uHeightScale: { value: 2.},
+    uStrength: {value:.2},
   uLightDir: { value: new THREE.Vector3(1,1,1).normalize() }
    }).current;
 
@@ -141,30 +143,34 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
   const dy = e.clientY - last.current[1]
 
   last.current = [e.clientX, e.clientY]
+if(isDragging){
 
-  mapRef.current.position.x += dx * 0.002
-  mapRef.current.position.y -= dy * 0.002
+  mapRef.current.position.x += dx * 0.006
+  mapRef.current.position.y -= dy * 0.006
+}
+mapRef.current.position.x += dx * 0.003
+  mapRef.current.position.y -= dy * 0.003
 
-  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x,-0.8,.55)
-  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y,-1.,.28)
+  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x,-1.,.6)
+  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y,-1.,1.)
 
-},[])
+},[isDragging])
 
 
   return (
     <>
     <Environment files={"./city-lightings.hdr"}/>
-      {/* <OrbitControls
+      <OrbitControls
      onChange={(e)=>{
 
        if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
      }}
-      />  */}
+      /> 
      <PerspectiveCamera
         makeDefault
         near={0.1}
         far={10000}
-        position={[0,0.,2.]}
+        position={[0,0.,1.2]}
         aspect={size.width / size.height}
         fov={75}
         ref={cameraRef}
@@ -181,7 +187,9 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
           dimensions={dimensions}
         />
       )}
-    <group position={[0,0.,0.3]} scale={1} ref={mapRef} rotation={[-Math.PI/15,0,0]}>
+    <group position={[0,0.,0.3]} scale={1} ref={mapRef} 
+    // rotation={[-Math.PI/15,0,0]}
+    >
      <axesHelper args={[10]}/>
        <mesh 
      renderOrder={100} 
@@ -208,6 +216,7 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
             <Pin
               key={pin.id}
               title={pin.title}
+              image={pin.image}
               radius={pin.radius ?? 0.03}
               color={pin.color ?? 'white'}
               position={toPlanePos(

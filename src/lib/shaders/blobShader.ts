@@ -151,7 +151,7 @@ vec3 blobShape(vec2 uv)
     // - uPinHover: smoothly controls the transition when hovering over a pin.
     // The glow width and intensity expand equally on both sides (inward and outward) of the border.
     float glowWidth = mix(10.0, 12.0, uPinHover);
-    float glowIntensity = mix(0.45, 1., uPinHover);
+    float glowIntensity = mix(0.6, 1.3, uPinHover * clamp(sin(uTime *3.),0.,1.));
     
     float borderGlow = exp(-abs(distInPixels) / glowWidth) * glowIntensity;
 
