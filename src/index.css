@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 body{
-    @apply w-screen max-w-360 h-screen min-h-screen mx-auto
+    @apply w-screen max-w-360 h-screen min-h-screen mx-auto bg-sky-300
 }
 
 #root{

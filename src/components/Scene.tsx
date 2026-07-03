@@ -7,6 +7,7 @@ import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShad
 import type { PerspectiveCamera as CameraType } from 'three'
 import { Pin } from './Pin';
 import { BlobSimulation } from './BlobSimulation';
+import CloudsSimulation from './CloudsSimulation';
 
 type PinData = {
   id: number
@@ -89,6 +90,9 @@ const last = useRef([0,0])
 
       mountain.wrapS = THREE.ClampToEdgeWrapping;
       mountain.wrapT = THREE.ClampToEdgeWrapping;
+      sharedUniforms.uHeightMap.value = heightMap
+      sharedUniforms.uColorMap.value = mountain
+      
 
     },[heightMap,mountain])
 // calculate width and height so the panel fits the entire screen
@@ -187,7 +191,7 @@ mapRef.current.position.x += dx * 0.003
           dimensions={dimensions}
         />
       )}
-    <group position={[0,0.,0.3]} scale={1} ref={mapRef} 
+    <group position={[0,0.,-0.3]} scale={1} ref={mapRef} 
     // rotation={[-Math.PI/15,0,0]}
     >
      <axesHelper args={[10]}/>
@@ -209,7 +213,7 @@ mapRef.current.position.x += dx * 0.003
           needsUpdate={true}
           
         />
-        {/* <meshStandardMaterial color={'red'}/> */}
+       
       </mesh>
 
        {pins.map((pin) => (
@@ -229,6 +233,7 @@ mapRef.current.position.x += dx * 0.003
           ))}
        
     </group>
+    <CloudsSimulation/>
     
     </>
   )
