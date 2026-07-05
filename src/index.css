@@ -1,26 +1,96 @@
 @import "tailwindcss";
 
-body{
-    @apply w-screen max-w-360 h-screen min-h-screen mx-auto bg-sky-300
+body {
+  @apply w-screen max-w-360 h-screen min-h-screen mx-auto;
+}
+@font-face {
+  font-family: "F37stout";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/F37stout-black-compressed-webfont.woff2") format("woff2");
+}
+:root {
+  --scroll-aside-padding-40: 40px;
+  --scroll-aside-padding-55: 55px;
+  --scroll-aside-width: 350px;
+  --scroll-aside: 0px;
+  --scroll-value: 0;
+  --scroll-aside-title: -10px;
+  --scroll-aside-title-translate-x: 0px;
+  --scroll-aside-title-translate-y: 0px;
 }
 
-#root{
-    @apply w-full h-screen min-h-screen
+@theme {
+    /* colors */
+  --color-icy-blue: #dde2e4;
+  --color-adventure-yellow: #e2ffcc;
+  --color-forest-green: #2d3329;
+  /* texts */
+  --text-eyebrow: 0.625rem;
+  /* breaking-points */
+  --breakpoint-mobile: 799.98px;
+  /* fonts */
+  --font-f37stout:"F37stout", sans-serif, serif , monospace;
 }
-.image-wrapper > img{
-    -webkit-mask-image: 
-    linear-gradient(to right, black 70%, transparent 98%), /* Fades Right */
-    linear-gradient(to left, black 70%, transparent 98%),  /* Fades Left */
-    linear-gradient(to bottom, black 70%, transparent 98%),/* Fades Bottom */
-    linear-gradient(to top, black 70%, transparent 98%);   /* Fades Top */
-  
-  mask-image: 
+
+#root {
+  @apply w-full h-screen min-h-screen;
+}
+
+.text-h1-like {
+  --text-min: 2.5rem;
+  --text-max: 3.5rem;
+  font-family: var(--font-f37stout);
+  line-height: 0.8;
+  font-size: clamp(
+    2.5rem,
+    calc((2.5rem * 100vw) / var(--breakpoint-mobile)),
+    3.5rem
+  );
+  font-size: clamp(
+    var(--text-min),
+    calc((var(--text-min) * 100vw) / var(--breakpoint-mobile)),
+    var(--text-max)
+  );
+}
+.image-wrapper > img {
+  -webkit-mask-image:
+    linear-gradient(to right, black 70%, transparent 98%),
+    /* Fades Right */ linear-gradient(to left, black 70%, transparent 98%),
+    /* Fades Left */ linear-gradient(to bottom, black 70%, transparent 98%),
+    /* Fades Bottom */ linear-gradient(to top, black 70%, transparent 98%); /* Fades Top */
+
+  mask-image:
     linear-gradient(to right, black 70%, transparent 98%),
     linear-gradient(to left, black 70%, transparent 98%),
     linear-gradient(to bottom, black 70%, transparent 98%),
     linear-gradient(to top, black 70%, transparent 98%);
 
-      -webkit-mask-composite: source-in; /* Safari support */
-      mask-composite: intersect;        /* Modern browsers: only show where both masks overlap */
-     
+  -webkit-mask-composite: source-in; /* Safari support */
+  mask-composite: intersect; /* Modern browsers: only show where both masks overlap */
+}
+
+@media (min-width: 800px) {
+  .page-home-module__mOmtjG__c-home_grid {
+    --scroll-home-grid: calc(350px - (var(--scroll-normalized, 0) * 350px)) 1fr;
+  }
+
+  .page-home-module__mOmtjG__c-home_grid-content {
+    --grid-content-cols: var(--scroll-wrapper-padding) 1fr
+      calc(55px - (55px * var(--scroll-normalized, 0)));
+    --grid-content-rows: var(--scroll-wrapper-padding) 1fr
+      var(--scroll-wrapper-padding);
+  }
+}
+
+@media (max-width: 799.98px) {
+  .page-home-module__mOmtjG__c-home_grid {
+    --scroll-home-grid: 0px 1fr;
+  }
+
+  .page-home-module__mOmtjG__c-home_grid-content {
+    --grid-content-cols: 0fr 1fr 0fr;
+    --grid-content-rows: 0fr 1fr 0fr;
+  }
 }
