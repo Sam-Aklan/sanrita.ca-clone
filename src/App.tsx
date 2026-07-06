@@ -1,6 +1,8 @@
 import { Canvas } from "@react-three/fiber";
 import Scene from './components/Scene'
 import HomePageWrapper from "./components/HomePageWrapper";
+import { MapWrapper } from "./components/map-section/MapWrapper";
+import MapPreferalMargins from "./components/map-section/MapPreferalMargins";
 
 const App = () => {
 	return (
@@ -15,7 +17,9 @@ const App = () => {
 		</Canvas> */}
 		{/* main content */}
 		<HomePageWrapper>
-			
+			<MapWrapper>
+				<MapPreferalMargins/>
+			</MapWrapper>
 		</HomePageWrapper>
 			
 		</div>
