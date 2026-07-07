@@ -1,4 +1,6 @@
 import CompassIcon from "../icons/CompassIcon"
+import LeftGraduated from "../icons/LeftGraduated"
+import RightGraduated from "../icons/RightGraduated"
 import SpiderIcon from "../icons/SpiderIcon"
 
 const MapPreferalMargins = () => {
@@ -24,7 +26,18 @@ const MapPreferalMargins = () => {
             </div>
         {/* bottom */}
         <div className="c-home_grid-content_row-3 || desktop-only col-span-3 row-start-3 row-span-1 opacity-(--scroll-wrapper-opacity)">
-
+        <div className="grid grid-cols-4 justify-around w-[calc(100%-45px*2)] h-full mx-auto place-items-center [&>p]:text-terrain-grey [&>p]:text-[10px] [&>p]:flex [&>p]:flex-col [&>p]:tracking-[0.3em] text-center uppercase">
+            <p className="justify-self-start -translate-x-5">
+                <LeftGraduated/>
+            </p>
+            <p className="text-terrain-grey">
+                <span>Gold idEAs</span> <span>seekers</span>
+            </p>
+            <p className="text-terrain-grey"><span>Republic of</span> <span>collaborative minds</span></p>
+            <p className="justify-self-end -translate-x-5">
+                <RightGraduated/>
+            </p>
+        </div>
         </div>
         {/* center */}
 
