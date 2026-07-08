@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+*{
+  scrollbar-width: thin
+}
+
 body {
   @apply w-screen max-w-360 h-screen min-h-screen mx-auto;
 }

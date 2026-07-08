@@ -95,36 +95,72 @@ const last = useRef([0,0])
       
 
     },[heightMap,mountain])
-// calculate width and height so the panel fits the entire screen
-    const dimensions = useMemo(()=>{
-      if(!cameraRef.current) return  {}
-      const camera = cameraRef.current
-      const distance = Math.abs(camera.position.z - 0.) // plane z position
+    // viewport size in Three.js coordinates
+    const viewport = useMemo(() => {
+      if (!cameraRef.current) return { width: 0, height: 0 };
+      const camera = cameraRef.current;
+      const distance = Math.abs(camera.position.z - 0.0);
+      const fov = THREE.MathUtils.degToRad(camera.fov);
+      const height = 2 * Math.tan(fov / 2) * distance;
+      const width = height * camera.aspect;
+      return { width, height };
+    }, [size, cameraRef.current]);
 
-    const fov = THREE.MathUtils.degToRad(camera.fov)
+    const pixelToUnit = useMemo(() => {
+      if (!viewport.height) return 0;
+      return viewport.height / size.height;
+    }, [viewport, size]);
 
-    const height = 2 * Math.tan(fov / 2) * distance
-    const width = height * camera.aspect
+    const isDesktop = size.width >= 800;
+    const sidebarWidth = isDesktop ? 350 : 0;
+    const mapWrapperWidth = size.width - sidebarWidth;
 
+    // target dimensions of the plane in pixels:
+    // - width fits vertical gridlines (w - 55 * 2) minus 40px padding = mapWrapperWidth - 150
+    // - height fits horizontal gridlines (h - 40) minus 40px padding = size.height - 80
+    const targetWidthPx = mapWrapperWidth - 150;
+    const targetHeightPx = size.height - 80;
 
-    return { width, height }
-    },[size,cameraRef.current])
+    // convert to Three.js units:
+    const planeWidthUnits = useMemo(() => {
+      if (targetWidthPx <= 0 || pixelToUnit <= 0) return 1;
+      return targetWidthPx * pixelToUnit;
+    }, [targetWidthPx, pixelToUnit]);
 
-  //  const roundUp = useCallback((num:number)=> Math.ceil(num * 1000)/1000,[])
+    const planeHeightUnits = useMemo(() => {
+      if (targetHeightPx <= 0 || pixelToUnit <= 0) return 1;
+      return targetHeightPx * pixelToUnit;
+    }, [targetHeightPx, pixelToUnit]);
+
+    // Center of MapWrapper is offset to the right by sidebarWidth / 2.
+    // Center of gridlines aligns with center of MapWrapper.
+    // Translate this offset to Three.js units.
+    const initialX = useMemo(() => {
+      return (sidebarWidth / 2) * pixelToUnit;
+    }, [sidebarWidth, pixelToUnit]);
+
+    // Pass dimensions of local plane geometry to BlobSimulation and toPlanePos.
+    // Since the plane is rotated by Math.PI/2 around Z:
+    // - Local X size of the mesh is planeHeightUnits (maps to screen height)
+    // - Local Y size of the mesh is planeWidthUnits (maps to screen width)
+    const dimensions = useMemo(() => {
+      return {
+        width: planeHeightUnits,
+        height: planeWidthUnits,
+      };
+    }, [planeHeightUnits, planeWidthUnits]);
 
    const toPlanePos = useCallback(( u:number,
   v:number,
   z:number=0.05
   )=>{
       
-  // const x = roundUp((u / dimensions.width) + 0.5);
-  // const y = roundUp((v / dimensions.height) + .5);
-   const x = (u - 0.5) * (dimensions.width ?? 0);
-   const y = (v - 0.5) * (dimensions.height ?? 0);
+   const x = (u - 0.5) * planeHeightUnits;
+   const y = (v - 0.5) * planeWidthUnits;
 
   return [x, y,z]
 
-    },[dimensions])
+    },[planeHeightUnits, planeWidthUnits])
 
 const onPointerDownHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
  dragging.current = true;
@@ -155,17 +191,19 @@ if(isDragging){
 mapRef.current.position.x += dx * 0.003
   mapRef.current.position.y -= dy * 0.003
 
-  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x,-1.,.6)
-  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y,-1.,1.)
+  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x, initialX - 1.0, initialX + 0.6)
+  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y, -1.0, 1.0)
 
-},[isDragging])
+},[isDragging, initialX])
 
 
   return (
     <>
     <Environment files={"./city-lightings.hdr"}/>
       <OrbitControls
-     onChange={(e)=>{
+      enabled={false}
+      enableZoom
+     onChange={()=>{
 
        if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
      }}
@@ -174,7 +212,7 @@ mapRef.current.position.x += dx * 0.003
         makeDefault
         near={0.1}
         far={10000}
-        position={[0,0.,1.2]}
+        position={[0,0.,30]}
         aspect={size.width / size.height}
         fov={75}
         ref={cameraRef}
@@ -191,8 +229,8 @@ mapRef.current.position.x += dx * 0.003
           dimensions={dimensions}
         />
       )}
-    <group position={[0,0.,-0.3]} scale={1} ref={mapRef} 
-    // rotation={[-Math.PI/15,0,0]}
+    <group position={[initialX,0.,-0.3]} ref={mapRef} 
+    rotation={[0,0,Math.PI/2]} 
     >
      <axesHelper args={[10]}/>
        <mesh 
@@ -203,7 +241,7 @@ mapRef.current.position.x += dx * 0.003
      onPointerOver={() => setIsHovered(true)}
      onPointerOut={() => setIsHovered(false)}
      >
-        <planeGeometry args={[dimensions?.width, dimensions?.height,100 , 100]} />
+        <planeGeometry args={[planeHeightUnits, planeWidthUnits,100 , 100]} />
         <shaderMaterial
           ref={materialRef}
           vertexShader={vertexMapShader}

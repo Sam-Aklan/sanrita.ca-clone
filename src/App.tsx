@@ -7,23 +7,27 @@ import GridLines from "./components/map-section/GridLines";
 
 const App = () => {
 	return (
-		<div className=" text-white/95 w-full h-full text-2xl font-bold text-center">
+		<div className=" text-white/95 w-full h-full text-2xl font-bold text-center overflow-hidden">
+		
+		
+		{/* main content */}
+		{/* <HomePageWrapper>
+			<MapWrapper>
+				<MapPreferalMargins/>
+				<GridLines/>
+			</MapWrapper>
+		</HomePageWrapper> */}
+		
+				<div className="absolute top-0 left-0 w-full h-full  overflow-hidden">
 
-		{/* <Canvas
+		<Canvas
 		 gl={{antialias:true,alpha:true}}
         dpr={Math.min(window.devicePixelRatio,2)} 
         camera={{position:[0,0,0]}}
 		>
 			<Scene/>
-		</Canvas> */}
-		{/* main content */}
-		<HomePageWrapper>
-			<MapWrapper>
-				<MapPreferalMargins/>
-				<GridLines/>
-			</MapWrapper>
-		</HomePageWrapper>
-			
+		</Canvas>
+			</div>
 		</div>
 	);
 };
