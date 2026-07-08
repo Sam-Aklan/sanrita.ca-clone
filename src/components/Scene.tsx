@@ -43,8 +43,8 @@ const last = useRef([0,0])
   uBlobTexture: { value: null }, // Added for blob simulation
 
   uTexelSize: { value: new THREE.Vector2() },
-  uHeightScale: { value: 2.},
-    uStrength: {value:.2},
+  uHeightScale: { value: 4.},
+    uStrength: {value:.8},
   uLightDir: { value: new THREE.Vector3(1,1,1).normalize() }
    }).current;
 
@@ -200,14 +200,14 @@ mapRef.current.position.x += dx * 0.003
   return (
     <>
     <Environment files={"./city-lightings.hdr"}/>
-      <OrbitControls
-      enabled={false}
-      enableZoom
+      {/* <OrbitControls
+      // enabled={false}
+      // enableZoom
      onChange={()=>{
 
        if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
      }}
-      /> 
+      />  */}
      <PerspectiveCamera
         makeDefault
         near={0.1}
@@ -224,9 +224,10 @@ mapRef.current.position.x += dx * 0.003
           isHovered={isHovered}
           isOverPin={isOverPin || isDragging}
           mapMaterialRef={materialRef} 
-          aspect={size.width / size.height}
           mapRef={mapRef}
           dimensions={dimensions}
+          widthPx={targetHeightPx}
+          heightPx={targetWidthPx}
         />
       )}
     <group position={[initialX,0.,-0.3]} ref={mapRef} 
@@ -269,9 +270,13 @@ mapRef.current.position.x += dx * 0.003
               onHoverChange={(hovered) => handlePinHover(pin.id, hovered)}
             />
           ))}
-       
+       <CloudsSimulation
+         width={planeHeightUnits}
+         height={planeWidthUnits}
+         widthPx={targetHeightPx}
+         heightPx={targetWidthPx}
+       />
     </group>
-    <CloudsSimulation/>
     
     </>
   )
