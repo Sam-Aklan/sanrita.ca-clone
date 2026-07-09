@@ -20,11 +20,11 @@ type PinData = {
   image?:string
 }
 const pins: PinData[] = [
-  { id: 1, title: 'port', u: 0.588, v: 0.46, z: 0.18, radius: 0.07, color: 'blue' },
-  { id: 2, title: 'harbour', u: 0.14, v: 0.39, z: 0.10, radius: 0.07, color: 'cyan', image:"./pics/fisher.jpg" },
-  { id: 3, title: 'city', u: 0.7, v: 0.73, z: 0.35, radius: 0.07, color: 'pink', image:"./pics/hut.jpg" },
-  { id: 4, title: 'mountain', u: 0.54, v: 0.245, z: 0.05, radius: 0.07, color: 'red', image:"./pics/viliage.jpg" },
-  { id: 5, title: 'diving', u: 0.31, v: 0.16, z: -0.002, radius: 0.07, color: 'green', },
+  { id: 1, title: 'port', u: 0.588, v: 0.46, z: .25, radius: 0.1, color: 'blue' },
+  { id: 2, title: 'harbour', u: 0.14, v: 0.39, z: 0.10, radius: 0.1, color: 'cyan', image:"./pics/fisher.jpg" },
+  { id: 3, title: 'city', u: 0.7, v: 0.73, z: 0.35, radius: 0.1, color: 'pink', image:"./pics/hut.jpg" },
+  { id: 4, title: 'mountain', u: 0.54, v: 0.245, z: 0.05, radius: 0.1, color: 'red', image:"./pics/viliage.jpg" },
+  { id: 5, title: 'diving', u: 0.31, v: 0.16, z: -0.002, radius: 0.1, color: 'green', },
 ]
 
 const Scene = () => {
@@ -111,15 +111,19 @@ const last = useRef([0,0])
       return viewport.height / size.height;
     }, [viewport, size]);
 
-    const isDesktop = size.width >= 800;
+   const [sidebarWidth,targetWidthPx,targetHeightPx] = useMemo(()=>{
+ const isDesktop = size.width >= 800;
     const sidebarWidth = isDesktop ? 350 : 0;
     const mapWrapperWidth = size.width - sidebarWidth;
-
-    // target dimensions of the plane in pixels:
+     // target dimensions of the plane in pixels:
     // - width fits vertical gridlines (w - 55 * 2) minus 40px padding = mapWrapperWidth - 150
     // - height fits horizontal gridlines (h - 40) minus 40px padding = size.height - 80
-    const targetWidthPx = mapWrapperWidth - 150;
-    const targetHeightPx = size.height - 80;
+    const targetWidthPx = size.height - 80;
+    const targetHeightPx = mapWrapperWidth - 150;
+        return [sidebarWidth,targetWidthPx,targetHeightPx]
+    },[size.width])
+   
+   
 
     // convert to Three.js units:
     const planeWidthUnits = useMemo(() => {
@@ -200,14 +204,14 @@ mapRef.current.position.x += dx * 0.003
   return (
     <>
     <Environment files={"./city-lightings.hdr"}/>
-      {/* <OrbitControls
+      <OrbitControls
       // enabled={false}
       // enableZoom
      onChange={()=>{
 
        if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
      }}
-      />  */}
+      /> 
      <PerspectiveCamera
         makeDefault
         near={0.1}
@@ -231,7 +235,7 @@ mapRef.current.position.x += dx * 0.003
         />
       )}
     <group position={[initialX,0.,-0.3]} ref={mapRef} 
-    rotation={[0,0,Math.PI/2]} 
+    // rotation={[0,0,Math.PI/2]} 
     >
      <axesHelper args={[10]}/>
        <mesh 

@@ -12,12 +12,12 @@ const App = () => {
 		
 		{/* main content */}
 
-		<HomePageWrapper>
+		{/* <HomePageWrapper>
 			<MapWrapper>
 				<MapPreferalMargins/>
 				<GridLines/>
 			</MapWrapper>
-		</HomePageWrapper>
+		</HomePageWrapper> */}
 		
 				<div className="absolute top-0 left-0 w-full h-full  overflow-hidden">
 

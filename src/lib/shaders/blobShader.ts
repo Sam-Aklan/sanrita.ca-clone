@@ -109,9 +109,9 @@ vec3 blobShape(vec2 uv)
     vec2 dir = normalize(vel + 1e-5);
 
     float baseMass = mix(0.6, 2.2, uMousePressure);
-    float mass = baseMass * uBlobSize * 0.01;
+    float mass = baseMass * uBlobSize * 0.05;
     if(uPinHover > 0.){
-        mass = mix(baseMass * uBlobSize * 0.01,baseMass * uBlobSize * 0.005,uPinHover);
+        mass = mix(baseMass * uBlobSize * 0.05,baseMass * uBlobSize * 0.01,uPinHover);
     }
 
     // Draw a single unified metaball (increased mass to maintain original size)
