@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { useCallback, useEffect,useMemo,useRef, useState } from 'react';
+import { useCallback, useEffect,useMemo,useRef, useState, type RefObject } from 'react';
 import {Environment, OrbitControls, PerspectiveCamera, useTexture} from "@react-three/drei";
 import { useThree, type ThreeEvent } from '@react-three/fiber';
 import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShader';
@@ -27,7 +27,11 @@ const pins: PinData[] = [
   { id: 5, title: 'diving', u: 0.31, v: 0.16, z: -0.002, radius: 0.1, color: 'green', },
 ]
 
-const Scene = () => {
+interface SceneProps{
+  mapPlane:RefObject<THREE.PlaneGeometry>
+}
+
+const Scene = ({mapPlane}:SceneProps) => {
   const cameraRef = useRef<CameraType>(null)
   const mapRef = useRef<THREE.Group>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
@@ -246,7 +250,7 @@ mapRef.current.position.x += dx * 0.003
      onPointerOver={() => setIsHovered(true)}
      onPointerOut={() => setIsHovered(false)}
      >
-        <planeGeometry args={[planeHeightUnits, planeWidthUnits,100 , 100]} />
+        <planeGeometry args={[planeHeightUnits, planeWidthUnits,100 , 100]} ref={mapPlane} />
         <shaderMaterial
           ref={materialRef}
           vertexShader={vertexMapShader}

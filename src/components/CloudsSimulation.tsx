@@ -37,7 +37,7 @@ const CloudsSimulation = ({ width, height, widthPx, heightPx }: CloudsSimulation
     })
    
   return (
-   <group position={[0,0,.8]}>
+   <group position={[0,0,.5]}>
     <mesh frustumCulled={false}>
         <planeGeometry args={[width, height]} />
         <shaderMaterial
