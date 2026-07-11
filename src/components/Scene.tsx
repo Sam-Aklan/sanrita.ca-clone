@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { useCallback, useEffect,useMemo,useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect,useMemo,useRef, useState } from 'react';
 import {Environment, OrbitControls, PerspectiveCamera, useTexture} from "@react-three/drei";
 import { useThree, type ThreeEvent } from '@react-three/fiber';
 import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShader';
@@ -27,11 +27,7 @@ const pins: PinData[] = [
   { id: 5, title: 'diving', u: 0.31, v: 0.16, z: -0.002, radius: 0.1, color: 'green', },
 ]
 
-interface SceneProps{
-  mapPlane:RefObject<THREE.PlaneGeometry>
-}
-
-const Scene = ({mapPlane}:SceneProps) => {
+const Scene = () => {
   const cameraRef = useRef<CameraType>(null)
   const mapRef = useRef<THREE.Group>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
@@ -48,11 +44,11 @@ const last = useRef([0,0])
 
   uTexelSize: { value: new THREE.Vector2() },
   uHeightScale: { value: 4.},
-    uStrength: {value:.8},
+    uStrength: {value:3.},
   uLightDir: { value: new THREE.Vector3(1,1,1).normalize() }
    }).current;
 
-    const {size}= useThree()
+    const {size,}= useThree()
     const [pointerUv, setPointerUv] = useState(new THREE.Vector2(-1, -1));
     const [isHovered, setIsHovered] = useState(false);
     const [hoveredPins, setHoveredPins] = useState<Set<number>>(new Set());
@@ -204,6 +200,7 @@ mapRef.current.position.x += dx * 0.003
 
 },[isDragging, initialX])
 
+console.log("scalex",planeHeightUnits, "scaley",planeWidthUnits)
 
   return (
     <>
@@ -243,6 +240,7 @@ mapRef.current.position.x += dx * 0.003
     >
      <axesHelper args={[10]}/>
        <mesh 
+     scale={[planeHeightUnits, planeWidthUnits, 1]}
      renderOrder={100} 
      onPointerDown={onPointerDownHandler}
      onPointerUp={onPointerUpHandler}
@@ -250,7 +248,7 @@ mapRef.current.position.x += dx * 0.003
      onPointerOver={() => setIsHovered(true)}
      onPointerOut={() => setIsHovered(false)}
      >
-        <planeGeometry args={[planeHeightUnits, planeWidthUnits,100 , 100]} ref={mapPlane} />
+        <planeGeometry args={[1, 1, 100, 100]} />
         <shaderMaterial
           ref={materialRef}
           vertexShader={vertexMapShader}
@@ -279,8 +277,7 @@ mapRef.current.position.x += dx * 0.003
             />
           ))}
        <CloudsSimulation
-         width={planeHeightUnits}
-         height={planeWidthUnits}
+         scale={[planeHeightUnits, planeWidthUnits, 1]}
          widthPx={targetHeightPx}
          heightPx={targetWidthPx}
        />

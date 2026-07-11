@@ -77,10 +77,8 @@ export const BlobSimulation = ({
   );
 
   const mesh = useMemo(() => {
-    const w = dimensions.width ?? 2;
-    const h = dimensions.height ?? 2;
-    return new THREE.Mesh(new THREE.PlaneGeometry(w, h), material);
-  }, [material, dimensions.width, dimensions.height]);
+    return new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
+  }, [material]);
 
   useEffect(() => {
     scene.add(mesh);
@@ -89,6 +87,12 @@ export const BlobSimulation = ({
       mesh.geometry.dispose();
     };
   }, [scene, mesh]);
+
+  useEffect(() => {
+    const w = dimensions.width ?? 2;
+    const h = dimensions.height ?? 2;
+    mesh.scale.set(w, h, 1);
+  }, [mesh, dimensions.width, dimensions.height]);
 
   useEffect(() => {
     const w = dimensions.width ?? 2;

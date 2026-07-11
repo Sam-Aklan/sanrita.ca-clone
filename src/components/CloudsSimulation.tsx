@@ -4,13 +4,12 @@ import { fragmentClouds, vertexClouds } from '../lib/shaders/clouds'
 import { useFrame } from '@react-three/fiber'
 
 type CloudsSimulationProps = {
-  width: number;
-  height: number;
+  scale: [number, number, number];
   widthPx: number;
   heightPx: number;
 };
 
-const CloudsSimulation = ({ width, height, widthPx, heightPx }: CloudsSimulationProps) => {
+const CloudsSimulation = ({ scale, widthPx, heightPx }: CloudsSimulationProps) => {
     const materialRef = useRef<THREE.ShaderMaterial>(null)
 
     const uniforms = useRef({
@@ -38,8 +37,8 @@ const CloudsSimulation = ({ width, height, widthPx, heightPx }: CloudsSimulation
    
   return (
    <group position={[0,0,.5]}>
-    <mesh frustumCulled={false}>
-        <planeGeometry args={[width, height]} />
+    <mesh frustumCulled={false} scale={scale}>
+        <planeGeometry args={[1, 1]} />
         <shaderMaterial
         ref={materialRef}
         vertexShader={vertexClouds}
