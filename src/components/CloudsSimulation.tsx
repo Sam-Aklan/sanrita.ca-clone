@@ -10,7 +10,7 @@ type CloudsSimulationProps = {
   scrollProgressRef:React.RefObject<{ value: number }>
 };
 
-const CloudsSimulation = ({ width, height, resolutionRef }: CloudsSimulationProps) => {
+const CloudsSimulation = ({ width, height, resolutionRef,scrollProgressRef }: CloudsSimulationProps) => {
     const materialRef = useRef<THREE.ShaderMaterial>(null)
     const cloudGroupRef = useRef<THREE.Group>(null)
     const uniforms = useRef({
@@ -36,6 +36,10 @@ const CloudsSimulation = ({ width, height, resolutionRef }: CloudsSimulationProp
                materialRef.current.uniforms.uResolution.value.copy(resolutionRef.current);
            }
        }
+       const progress = scrollProgressRef.current.value;
+       const mappedProgress =THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(progress,0.6,1.,0.8,9),0.8,9);
+      //  console.log("z clouds", mappedProgress)
+       cloudGroupRef.current.position.z = mappedProgress;
     })
    
   return (
