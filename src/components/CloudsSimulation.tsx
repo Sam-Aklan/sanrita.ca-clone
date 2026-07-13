@@ -6,18 +6,18 @@ import { useFrame } from '@react-three/fiber'
 type CloudsSimulationProps = {
   width: number;
   height: number;
-  widthPx: number;
-  heightPx: number;
+  resolutionRef: React.RefObject<THREE.Vector2>;
+  scrollProgressRef:React.RefObject<{ value: number }>
 };
 
-const CloudsSimulation = ({ width, height, widthPx, heightPx }: CloudsSimulationProps) => {
+const CloudsSimulation = ({ width, height, resolutionRef }: CloudsSimulationProps) => {
     const materialRef = useRef<THREE.ShaderMaterial>(null)
-
+    const cloudGroupRef = useRef<THREE.Group>(null)
     const uniforms = useRef({
         uTime: { value: 0 },
-  uResolution: { value: new THREE.Vector2(widthPx, heightPx) },
+  uResolution: { value: new THREE.Vector2(1024, 1024) },
   uWindDirection: { value: new THREE.Vector2(Math.cos(0.3), Math.sin(0.3)) },
-  uWindSpeed: { value: 0.02 },
+  uWindSpeed: { value: 0.005 },
   uCloudScale: { value: 6.0 },
   uCloudOpacity: { value: .8 },
   uCloudCutoff: { value: 0.3 },
@@ -32,12 +32,14 @@ const CloudsSimulation = ({ width, height, widthPx, heightPx }: CloudsSimulation
        const time = clock.getElapsedTime();
        if (materialRef.current) {
            materialRef.current.uniforms.uTime.value = time ;
-           materialRef.current.uniforms.uResolution.value.set(widthPx, heightPx);
+           if (resolutionRef.current) {
+               materialRef.current.uniforms.uResolution.value.copy(resolutionRef.current);
+           }
        }
     })
    
   return (
-   <group position={[0,0,.8]}>
+   <group position={[0,0,.8]} ref={cloudGroupRef}>
     <mesh frustumCulled={false}>
         <planeGeometry args={[width, height]} />
         <shaderMaterial

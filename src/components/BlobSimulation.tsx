@@ -6,8 +6,7 @@ import { fragmentBlobShader, vertexBlobShader } from '../lib/shaders/blobShader'
 
 type BlobSimulationProps = {
   resolution?: number;
-  widthPx?: number;
-  heightPx?: number;
+  resolutionRef: React.RefObject<THREE.Vector2>;
   heightMap: THREE.Texture;
   pointerUv: THREE.Vector2;
   isHovered: boolean;
@@ -19,8 +18,7 @@ type BlobSimulationProps = {
 
 export const BlobSimulation = ({
   resolution = 1024,
-  widthPx,
-  heightPx,
+  resolutionRef,
   heightMap,
   pointerUv,
   isHovered,
@@ -29,16 +27,13 @@ export const BlobSimulation = ({
   mapRef,
   dimensions,
 }: BlobSimulationProps) => {
-  const wPx = Math.round(widthPx ?? resolution);
-  const hPx = Math.round(heightPx ?? resolution);
-
-  const fbo1 = useFBO(wPx, hPx, {
+  const fbo1 = useFBO(resolution, resolution, {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
     type: THREE.HalfFloatType,
   });
 
-  const fbo2 = useFBO(wPx, hPx, {
+  const fbo2 = useFBO(resolution, resolution, {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
     type: THREE.HalfFloatType,
@@ -50,7 +45,7 @@ export const BlobSimulation = ({
   const camera = useMemo(() => new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1), []);
 
   const uniforms = useRef({
-    uResolution: { value: new THREE.Vector2(wPx, hPx) },
+    uResolution: { value: new THREE.Vector2(resolution, resolution) },
     uMouse: { value: new THREE.Vector2(-1, -1) },
     uPrevMouse: { value: new THREE.Vector2(-1, -1) },
     uMouseVelocity: { value: new THREE.Vector2(0, 0) },
@@ -60,7 +55,7 @@ export const BlobSimulation = ({
     uBlobSize: { value: 0.03 },
     uPrevTrail: { value: fbo1.texture },
     uHeightMap: { value: heightMap },
-    uAspect: { value: wPx / hPx },
+    uAspect: { value: 1.0 },
     uPinHover: { value: 0.0 },
   });
 
@@ -110,8 +105,10 @@ export const BlobSimulation = ({
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     uniforms.current.uTime.value = time;
-    uniforms.current.uResolution.value.set(wPx, hPx);
-    uniforms.current.uAspect.value = wPx / hPx;
+    if (resolutionRef.current) {
+      uniforms.current.uResolution.value.copy(resolutionRef.current);
+      uniforms.current.uAspect.value = resolutionRef.current.x / resolutionRef.current.y;
+    }
 
     // Smoothly interpolate the pin hover state (0.0 to 1.0)
     const targetPinHover = isOverPin ? 1.0 : 0.0;
@@ -140,9 +137,13 @@ export const BlobSimulation = ({
         const localPoint = intersectPoint.clone();
         mapRef.current.worldToLocal(localPoint);
 
+        const scaleGroup = mapRef.current.getObjectByName('mapScaleGroup');
+        const scaleX = scaleGroup ? scaleGroup.scale.x : 1;
+        const scaleY = scaleGroup ? scaleGroup.scale.y : 1;
+
         // Convert local coordinates to UV space [0, 1]
-        const u = (localPoint.x / dimensions.width) + 0.5;
-        const v = (localPoint.y / dimensions.height) + 0.5;
+        const u = (localPoint.x / (dimensions.width * scaleX)) + 0.5;
+        const v = (localPoint.y / (dimensions.height * scaleY)) + 0.5;
         targetMouse = new THREE.Vector2(u, v);
         hasProjected = true;
       }
