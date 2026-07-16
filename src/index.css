@@ -1,11 +1,8 @@
 @import "tailwindcss";
 
-*{
-  scrollbar-width: none
-}
 
 body {
-  @apply w-screen max-w-360 h-screen min-h-screen mx-auto;
+  @apply w-screen max-w-360 h-screen min-h-screen mx-auto overflow-x-hidden;
 }
 
 @font-face {

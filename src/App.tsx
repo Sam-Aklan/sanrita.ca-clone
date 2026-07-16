@@ -64,7 +64,7 @@ const App = () => {
   });
   return (
     <ReactLenis>
-      <div className=" text-white/95 w-full h-full text-2xl font-bold text-center overflow-hidden">
+      <div className=" text-white/95 w-full h-full text-2xl font-bold text-center overflow-hidden hide-scrollbar">
         {/* main content */}
         <div className="home-container">
           <HomePageWrapper>
