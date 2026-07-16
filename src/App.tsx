@@ -11,12 +11,14 @@ import { MapWrapper } from "./components/map-section/MapWrapper";
 import MapPreferalMargins from "./components/map-section/MapPreferalMargins";
 import GridLines from "./components/map-section/GridLines";
 import CSSPlugin from "gsap/CSSPlugin";
-gsap.registerPlugin(ScrollTrigger, useGSAP,CSSPlugin);
+import { SplitText } from "gsap/SplitText";
+gsap.registerPlugin(ScrollTrigger, useGSAP,CSSPlugin,SplitText);
 
 
 const App = () => {
   const lenisRef = useRef<LenisRef>(null);
   const planeRef = useRef<THREE.PlaneGeometry>(null);
+  const paragraphElementRef = useRef<HTMLParagraphElement>(null)
   const scrollProgress = useRef({ value: 0 });
   useEffect(() => {
     function update(time: number) {
@@ -29,6 +31,20 @@ const App = () => {
   }, []);
 
   useGSAP(() => {
+    const split = new SplitText(paragraphElementRef.current,{type:"chars",charsClass:'char',});
+    split.chars.forEach(char=>{
+      char.innerHTML = `<span>${char.innerHTML}</span>`
+    })
+ 
+    const chars = paragraphElementRef.current.querySelectorAll(".char span");
+
+    gsap.set(chars,{
+      transformOrigin:"center bottom",
+      transform:"scaleX(1) scaleY(1)",
+      display:"inline-block",
+      opacity:1
+    })
+    // console.log(chars)
     gsap.to(scrollProgress.current, {
       value: 1,
       scrollTrigger: {
@@ -56,6 +72,14 @@ const App = () => {
             "--scroll-wrapper-opacity":100 - 100 *progress,
             "--scroll-gridlines-opacity":100 - 100 * progress,
           })
+          const mapper = gsap.utils.mapRange(.15,.85,1.,0.);
+          const mappedProgress = gsap.utils.clamp(0,1,mapper(progress));
+
+          gsap.to(chars,{
+             transform:`scaleX(${mappedProgress}) scaleY(${gsap.utils.clamp(0.4,1.,mappedProgress)})`,
+            opacity:mappedProgress,
+            stagger:.1
+          })
 
         },
         
@@ -69,7 +93,7 @@ const App = () => {
         <div className="home-container">
           <HomePageWrapper>
             <MapWrapper>
-              <MapPreferalMargins />
+              <MapPreferalMargins textRef={paragraphElementRef}/>
               <GridLines />
             </MapWrapper>
           </HomePageWrapper>

@@ -37,9 +37,9 @@ const DropDownBar = () => {
                 duration:.4,
                 ease:"power2.inOut"
             },"-=.1").from(".sidbar-tab",{
-                y:50,
+                y:20,
                 opacity:0,
-                stagger:.1
+                stagger:.05
             },"-=.1")
         
     },{scope:DropDownRef})

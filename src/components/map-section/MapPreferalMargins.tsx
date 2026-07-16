@@ -1,9 +1,11 @@
+import { useRef, type RefObject } from "react"
 import CompassIcon from "../icons/CompassIcon"
 import LeftGraduated from "../icons/LeftGraduated"
 import RightGraduated from "../icons/RightGraduated"
 import SpiderIcon from "../icons/SpiderIcon"
 
-const MapPreferalMargins = () => {
+const MapPreferalMargins = ({textRef}:{textRef:RefObject<HTMLParagraphElement>}) => {
+   
   return (
     <article className="c-home_grid-content || col-1 row-1 grid grid-cols-(--grid-content-cols) grid-rows-(--grid-content-rows) w-full h-full relative overflow-clip page-home-module__mOmtjG__c-home_grid-content">
         {/* top */}
@@ -42,8 +44,8 @@ const MapPreferalMargins = () => {
         {/* center */}
 
         <div className="c-home_grid-content_map || grid col-start-2 col-span-1 row-start-2 row-span-1 relative w-full h-full">
-            <div className="c-scroll_warn | col-1 row-1 relative z-12 place-content-center text-center pointer-events-none!">
-                <p className="text-h1-like text-adventure-yellow uppercase">
+            <div className="c-scroll_warn | col-1 row-1 relative z-12 place-content-center text-center pointer-events-none! overflow-hidden">
+                <p className="text-h1-like text-adventure-yellow uppercase" ref={textRef}>
                     scroll to enter the world
                 </p>
 
