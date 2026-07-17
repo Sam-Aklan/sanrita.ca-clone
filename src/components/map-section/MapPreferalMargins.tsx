@@ -1,20 +1,72 @@
-import { useRef, type RefObject } from "react"
+import { useCallback, useRef, type MouseEvent, type RefObject } from "react"
 import CompassIcon from "../icons/CompassIcon"
 import LeftGraduated from "../icons/LeftGraduated"
 import RightGraduated from "../icons/RightGraduated"
 import SpiderIcon from "../icons/SpiderIcon"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
 
-const MapPreferalMargins = ({textRef}:{textRef:RefObject<HTMLParagraphElement>}) => {
-   
+const MapPreferalMargins = ({textRef}:{textRef:RefObject<HTMLParagraphElement | null>}) => {
+   const articleRef= useRef<HTMLElement>(null);
+   const compassRef =useRef<SVGSVGElement>(null)
+   const currentRotationRef = useRef(0)
+
+   const onMouseMove = useCallback((ev: globalThis.MouseEvent) => {
+     if (!compassRef.current) return
+     const { clientX, clientY } = ev
+
+     const rect = compassRef.current.getBoundingClientRect()
+     const cx = rect.left + rect.width / 2
+     const cy = rect.top + rect.height / 2
+
+     const dx = clientX - cx
+     const dy = clientY - cy
+
+     // Calculate angle to mouse in degrees
+     const angleRad = Math.atan2(dy, dx)
+     const targetRotation = angleRad * (180 / Math.PI)
+
+     // Needle points to -135deg by default. To point to angleDeg, rotation should be:
+    //  const targetRotation = angleDeg + 135
+
+     // Normalize to find shortest path rotation to prevent 360-degree spin jumps
+     const currentRotation = currentRotationRef.current
+     let diff = (targetRotation - currentRotation) % 360
+     if (diff > 180) {
+       diff -= 360
+     } else if (diff < -180) {
+       diff += 360
+     }
+     const nextRotation = currentRotation + diff
+     currentRotationRef.current = nextRotation
+
+     // Animate CSS custom property '--rotation' with a springy physical ease
+     gsap.to(compassRef.current, {
+       "--rotation": `${nextRotation}deg`,
+       duration: 0.8,
+       ease: "elastic.out(1, 0.4)",
+       overwrite: "auto",
+     })
+   }, [])
+
+   useGSAP(() => {
+     const element = articleRef.current
+     if (!element) return
+     element.addEventListener("mousemove", onMouseMove)
+     return () => {
+       element.removeEventListener("mousemove", onMouseMove)
+     }
+   }, [onMouseMove])
+
   return (
-    <article className="c-home_grid-content || col-1 row-1 grid grid-cols-(--grid-content-cols) grid-rows-(--grid-content-rows) w-full h-full relative overflow-clip page-home-module__mOmtjG__c-home_grid-content">
+    <article className="c-home_grid-content || col-1 row-1 grid grid-cols-(--grid-content-cols) grid-rows-(--grid-content-rows) w-full h-full relative overflow-clip page-home-module__mOmtjG__c-home_grid-content z-100" ref={articleRef}>
         {/* top */}
         <div className="c-home_grid-content_row-1 || desktop-only col-span-3 row-span-1 opacity-(--scroll-wrapper-opacity)">
             <div className="grid grid-cols-4 justify-around w-[calc(100%-55px*2)] h-full mx-auto place-items-center [&>p]:text-terrain-grey [&>p]:text-[10px] text-center">
                 <p><SpiderIcon/></p>
                 <p>19:35:23 GMT</p>
                 <p>EST.2024</p>
-                <p><CompassIcon/></p>
+                <p><CompassIcon ref={compassRef}/></p>
             </div>
         </div>
         {/* left */}

@@ -68,7 +68,7 @@ const DropDownBar = () => {
                         onOpenMenu()
                         }}>
                         {/* bar */}
-                        <div className='group block pointer-events-auto  pointer-events-none relative h-full overflow-hidden'
+                        <div className='group block pointer-events-auto   relative h-full overflow-hidden'
                         >
                         
                         <div className='icon-container relative text-eyebrow font-bold text-forest-green uppercase px-4 flex gap-x-2 justify-between items-center overflow-hidden w-full h-full'>
