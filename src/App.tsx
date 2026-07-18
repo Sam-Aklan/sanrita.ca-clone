@@ -48,7 +48,7 @@ const App = () => {
     gsap.to(scrollProgress.current, {
       value: 1,
       scrollTrigger: {
-        trigger: ".home-container",
+        trigger: ".home-wrapper",
         start: "top top",
         end: `+=${window.innerWidth * 2.5}px`,
         pin: true,
@@ -78,28 +78,23 @@ const App = () => {
           gsap.to(chars,{
              transform:`scaleX(${mappedProgress}) scaleY(${gsap.utils.clamp(0.4,1.,mappedProgress)})`,
             opacity:mappedProgress,
-            stagger:.1
+            stagger:.08
           })
 
         },
+        snap:1
         
       },
     });
   });
   return (
     <ReactLenis>
-      <div className=" text-white/95 w-full h-full text-2xl font-bold text-center overflow-hidden hide-scrollbar">
+      <div className=" text-white/95 w-full h-full text-2xl font-bold text-center overflow-hidden home-wrapper relative">
         {/* main content */}
-        <div className="home-container">
+        <div className="home-container relative">
           <HomePageWrapper>
             <MapWrapper>
-              <MapPreferalMargins textRef={paragraphElementRef}/>
-              <GridLines />
-            </MapWrapper>
-          </HomePageWrapper>
-        </div>
-
-        {/* <div className=" r3f_renderer absolute top-0 left-0 w-full h-full">
+               <div className=" r3f_renderer absolute top-0 left-0 w-full h-full -z-0.5">
 			<div className="w-full h-full overflow-x-hidden">
 
 		<Canvas
@@ -110,7 +105,14 @@ const App = () => {
 			<Scene mapPlaneRef={planeRef} scrollProgress={scrollProgress}/>
 		</Canvas>
 			</div>
-			</div> */}
+			</div>
+              <MapPreferalMargins textRef={paragraphElementRef}/>
+              <GridLines />
+            </MapWrapper>
+          </HomePageWrapper>
+        </div>
+
+       
       </div>
     </ReactLenis>
   );

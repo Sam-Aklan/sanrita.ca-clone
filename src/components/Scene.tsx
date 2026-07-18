@@ -287,7 +287,6 @@ mapRef.current.position.x += dx * 0.003
     <group position={[initialX,0.,-0.3]} ref={mapRef} 
     // rotation={[0,0,Math.PI/2]} 
     >
-      <axesHelper args={[10]}/>
       <group ref={mapScaleGroupRef} name="mapScaleGroup">
         <mesh 
           renderOrder={100} 

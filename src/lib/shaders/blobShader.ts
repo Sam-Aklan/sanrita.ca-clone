@@ -242,8 +242,8 @@ float activeFactor = 1.0 - motionFade;
 
     pigment = pow(pigment, 1.05);
     borderPigment = pow(borderPigment, 1.05);
-
-    gl_FragColor = vec4(pigment, wetness, borderPigment, 1.0);
+    vec3 blobColor = vec3(pigment, wetness,borderPigment) * vec3(0.8031, 0.9227, 0.5389);
+    gl_FragColor = vec4(blobColor, 1.0);
    
 }
 
