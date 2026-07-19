@@ -31,6 +31,7 @@ const App = () => {
   }, []);
 
   useGSAP(() => {
+    if (!paragraphElementRef.current) return;
     const split = new SplitText(paragraphElementRef.current,{type:"chars",charsClass:'char',});
     split.chars.forEach(char=>{
       char.innerHTML = `<span>${char.innerHTML}</span>`
@@ -82,13 +83,17 @@ const App = () => {
           })
 
         },
-        snap:1
+        snap:{
+          snapTo:1.,
+          delay:.01,
+          inertia:false,
+        }
         
       },
     });
   });
   return (
-    <ReactLenis>
+    <ReactLenis root ref={lenisRef} options={{ autoRaf: false }}>
       <div className=" text-white/95 w-full h-full text-2xl font-bold text-center overflow-hidden home-wrapper relative">
         {/* main content */}
         <div className="home-container relative">

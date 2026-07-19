@@ -3,7 +3,6 @@ import MapIcon from '../icons/MapIcon'
 import FireIcon from '../icons/FireIcon'
 import AboutIcon from '../icons/AboutIcon'
 import ContactIcon from '../icons/ContactIcon'
-import InstagramIcon from '../icons/InstagramIcon'
 import LinkedInIcon from '../icons/LinkedIn'
 import PlaygroundIcon from '../icons/PlaygroundIcon'
 import RoadIcon from '../icons/RoadIcon'
@@ -12,13 +11,14 @@ import ViewportIcon from '../icons/ViewportIcon'
 import FishingSpotIcon from '../icons/FishingSpotIcon'
 import SidbarTab from './SidbarTab'
 import { cn } from '../../lib/utils'
+import GithubIcon from '../icons/GithubIcon'
 
 const tabs = [
     {key:"map",IconNode:<MapIcon/>,isLink:true},
     {key:"project",IconNode:<FireIcon/>, isLink:true},
     {key:"about",IconNode:<AboutIcon/>, isLink:true},
     {key:"contact",IconNode:<ContactIcon/>, isLink:true},
-    {key:"instagram",IconNode:<InstagramIcon/>, isLink:true,},
+    {key:"github",IconNode:<GithubIcon/>, isLink:true,},
     {key:"LinkedIn",IconNode:<LinkedInIcon/>, isLink:true},
     {key:"Playground",IconNode:<PlaygroundIcon/>, isLink:true},
     {key:"Road",IconNode:<RoadIcon/>, isLink:false},

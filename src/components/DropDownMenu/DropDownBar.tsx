@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import OpenMenuIcon from '../icons/OpenMenuIcon'
 import CloseMenuIcon from '../icons/CloseMenuIcon'
 import { Sidebar } from '../SidebarSection'
@@ -13,12 +13,21 @@ const DropDownBar = () => {
     const timeLineRef = useRef<gsap.core.Timeline|null>(null)
     const {contextSafe}= useGSAP(()=>{
         gsap.set([whiskersRef.current,boardRef.current],{
-            clipPath: "inset(0% 0% 100% 0%)"
+            clipPath: "inset(0% 0% 100% 0%)",
+            pointerEvents: "none"
         })
         timeLineRef.current = gsap.timeline({
             paused: true,
+            onComplete:()=>{
+                 gsap.set([whiskersRef.current,boardRef.current],{
+                    pointerEvents:"auto"
+                })
+            },
             onReverseComplete: () => {
                 gsap.set("img.topology-image", { clearProps: "opacity" });
+                gsap.set([whiskersRef.current,boardRef.current],{
+                    pointerEvents:"none"
+                })
             }
         });
         timeLineRef.current.to(whiskersRef.current,{
@@ -105,7 +114,7 @@ const DropDownBar = () => {
             </div>
 
                {/* whiskers */}
-                        <div className='w-full row-start-2 row-span-1 pointer-events-auto inline-flex justify-around h-2.5 || after:inline-block after:w-full after:h-full after:border-r-2 after:mx-4 after:border-r-adventure-yellow || before:inline-block before:mx-4 before:w-full before:h-full before:border-l-2 before:border-l-adventure-yellow  overflow-hidden'
+                        <div className='w-full row-start-2 row-span-1 pointer-events-none inline-flex justify-around h-2.5 || after:inline-block after:w-full after:h-full after:border-r-2 after:mx-4 after:border-r-adventure-yellow || before:inline-block before:mx-4 before:w-full before:h-full before:border-l-2 before:border-l-adventure-yellow  overflow-hidden'
                         ref={whiskersRef}
                         />
 

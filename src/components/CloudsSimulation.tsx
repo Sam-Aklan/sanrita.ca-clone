@@ -16,7 +16,7 @@ const CloudsSimulation = ({ width, height, resolutionRef,scrollProgressRef }: Cl
     const uniforms = useRef({
        uTime: { value: 0 },
   uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-  uWindDirection: { value: new THREE.Vector2(Math.cos(0.3), Math.sin(0.3)) },
+  uWindDirection: { value: new THREE.Vector2(Math.cos(0.8), Math.sin(0.8)) },
   uWindSpeed: { value: 0.02 },
   uCloudScale: { value: 15},
   uCloudOpacity: { value: 1.},
@@ -36,10 +36,12 @@ const CloudsSimulation = ({ width, height, resolutionRef,scrollProgressRef }: Cl
                materialRef.current.uniforms.uResolution.value.copy(resolutionRef.current);
            }
        }
-       const progress = scrollProgressRef.current.value;
-       const mappedProgress =THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(progress,0.6,1.,0.8,9),0.8,9);
-      //  console.log("z clouds", mappedProgress)
-       cloudGroupRef.current.position.z = mappedProgress;
+       const progress = scrollProgressRef.current ? scrollProgressRef.current.value : 0;
+       const mappedProgress = THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(progress, 0.6, 1.0, 0.8, 9.0), 0.8, 9.0);
+       //  console.log("z clouds", mappedProgress)
+       if (cloudGroupRef.current) {
+           cloudGroupRef.current.position.z = mappedProgress;
+       }
     })
    
   return (

@@ -46,11 +46,9 @@ const useCompassAnimation = () => {
    }, [])
 
    useGSAP(() => {
-     const element = articleRef.current
-     if (!element) return
-     element.addEventListener("mousemove", onMouseMove)
+     window.addEventListener("mousemove", onMouseMove)
      return () => {
-       element.removeEventListener("mousemove", onMouseMove)
+       window.removeEventListener("mousemove", onMouseMove)
      }
    }, [onMouseMove])
    

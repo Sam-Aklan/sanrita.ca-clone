@@ -38,7 +38,7 @@ const Scene = ({mapPlaneRef, scrollProgress}:SceneProps) => {
   const materialRef = useRef<THREE.ShaderMaterial>(null)
   // hold and drag refs
   const dragging = useRef(false)
-const last = useRef([0,0])
+  const last = useRef([0,0])
   const pinsGroupRef = useRef<THREE.Group>(null)
   const mapScaleGroupRef = useRef<THREE.Group>(null)
   const resolutionRef = useRef<THREE.Vector2>(new THREE.Vector2(1024, 1024))
@@ -126,8 +126,8 @@ const last = useRef([0,0])
      // target dimensions of the plane in pixels:
     // - width fits vertical gridlines (w - 55 * 2) minus 40px padding = mapWrapperWidth - 150
     // - height fits horizontal gridlines (h - 40) minus 40px padding = size.height - 80
-    const targetWidthPx = size.height - 80;
-    const targetHeightPx = mapWrapperWidth - 150;
+    const targetWidthPx = size.height - 120;
+    const targetHeightPx = mapWrapperWidth - 170;
         return [sidebarWidth,targetWidthPx,targetHeightPx]
     },[size.width])
    
