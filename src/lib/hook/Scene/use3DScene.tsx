@@ -11,7 +11,10 @@ import { pins } from '../../data/sceneData';
 const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number }>}) => {
   const {isDesktop}= useWindowSize()
   const cameraRef = useRef<CameraType>(null)
-  const cameraPosition = useMemo(()=>isDesktop?[0,0,10]:[0,0,7],[isDesktop])
+ const cameraPosition = useMemo(()=>{
+  return isDesktop? [0,0,10]:[0,0,7]
+}
+  ,[isDesktop])
   const mapRef = useRef<THREE.Group>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
   // hold and drag refs
@@ -72,21 +75,22 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
       
 
     },[heightMap,mountain])
-    // viewport size in Three.js coordinates
-    const viewport = useMemo(() => {
+    // Viewport sizes at initial and final camera positions
+    const viewPort = useMemo(() => {
       if (!cameraRef.current) return { width: 0, height: 0 };
       const camera = cameraRef.current;
-      const distance = Math.abs(camera.position.z - 0.0);
+      const initialZ = cameraPosition[2];
       const fov = THREE.MathUtils.degToRad(camera.fov);
-      const height = 2 * Math.tan(fov / 2) * distance;
+      const height = 2 * Math.tan(fov / 2) * initialZ;
       const width = height * camera.aspect;
       return { width, height };
-    }, [size, cameraRef.current]);
+    }, [size, cameraPosition]);
+
 
     const pixelToUnit = useMemo(() => {
-      if (!viewport.height) return 0;
-      return viewport.height / size.height;
-    }, [viewport, size]);
+      if (!viewPort.height) return 0;
+      return viewPort.height / size.height;
+    }, [viewPort, size]);
 
    const [sidebarWidth,targetWidthPx,targetHeightPx] = useMemo(()=>{
     const sidebarWidth = isDesktop ? 350 : 0;
@@ -141,7 +145,9 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
   return [x, y,z]
 
     },[planeHeightUnits, planeWidthUnits])
-
+console.log("intial x",initialX)
+console.log("current map postion",mapRef.current?.position)
+console.log("camera z postion",cameraRef.current?.position.z)
     useEffect(() => {
       const getPointerCoords = (e: PointerEvent | TouchEvent): [number, number] | null => {
         if ('touches' in e && e.touches && e.touches.length > 0) {
@@ -240,13 +246,19 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
         setPointerUv(e.uv.clone());
       }
     }, []);
+    useEffect(()=>{
+     if(materialRef.current){
+      materialRef.current.uniforms.uHeightScale.value = isDesktop?4.:8.
+      materialRef.current.uniforms.uStrength.value = isDesktop?.8:3.
+     }
+    },[isDesktop])
 
   useFrame(() => {
     const p = scrollProgress.current ? scrollProgress.current.value : 0;
     
     const isRotated = mapRef.current ? Math.abs(mapRef.current.rotation.z - Math.PI/2) < 0.1 : false;
-    const targetScaleX = isRotated ? (viewport.height / planeHeightUnits) : (viewport.width / planeHeightUnits);
-    const targetScaleY = isRotated ? (viewport.width / planeWidthUnits) : (viewport.height / planeWidthUnits);
+    const targetScaleX = isRotated ? (viewPort.height / planeHeightUnits) : (viewPort.width / planeHeightUnits);
+    const targetScaleY = isRotated ? (viewPort.width / planeWidthUnits) : (viewPort.height / planeWidthUnits);
     
     if(isDesktop){
       const currentScaleX = THREE.MathUtils.lerp(1, targetScaleX, p);
@@ -294,32 +306,27 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
       }
     }
 
-    const currentWidthPx = targetHeightPx * targetScaleX;
-    const currentHeightPx = targetWidthPx * targetScaleY;
     resolutionRef.current.set(targetHeightPx, targetWidthPx);
-
-    // if (pinsGroupRef.current) {
-    //   pinsGroupRef.current.children.forEach((pinGroup, index) => {
-    //     const pinData = pins[index];
-    //     if (pinGroup instanceof THREE.Group && pinData) {
-    //       // pinGroup.position.x = (pinData.u - 0.5) * planeHeightUnits * targetScaleX;
-    //       // pinGroup.position.y = (pinData.v - 0.5) * planeWidthUnits * targetScaleY;
-    //       pinGroup.position.x = (pinData.u - 0.5) * planeHeightUnits ;
-    //       pinGroup.position.y = (pinData.v - 0.5) * planeWidthUnits;
-    //     }
-    //   });
-    // }
-
-    //  const pMapper = THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(p, .9, 1., 0, 1.), 0, 1)
-    // if (cameraRef.current) {
-    //   cameraRef.current.position.z = 5
-    // }
 
     }
 
    
    
   });
+  
+  // useEffect(()=>{
+  //   if(mapScaleGroupRef.current && cameraRef.current && mapRef.current&& scrollProgress.current && scrollProgress.current.value >=0.97){
+  //     console.log("scroll progress",scrollProgress.current)
+  //     mapRef.current.position.setX(0)
+  //     mapRef.current.position.setY(0)
+  //     mapScaleGroupRef.current.scale.set(2.,2.,1.)
+  //     cameraRef.current.position.z = 7
+      
+  //   }
+  // },[isDesktop])
+  console.log("viewPort",viewPort)
+  console.log("dimensions",dimensions)
+  console.log("plane dimensions", planeHeightUnits, planeWidthUnits)
    
  return{
     materialRef,

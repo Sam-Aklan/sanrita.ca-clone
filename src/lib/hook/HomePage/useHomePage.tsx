@@ -74,7 +74,7 @@ useGSAP(() => {
         
       },
     });
-  },{dependencies:[isDesktop]});
+  },{dependencies:[]});
   return {paragraphElementRef,planeRef,scrollProgress}
 }
 
