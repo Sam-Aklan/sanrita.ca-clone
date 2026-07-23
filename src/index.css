@@ -81,6 +81,14 @@ section{
     var(--text-max)
   );
 }
+.text-h3-like{
+--text-min: 1.5rem;
+    --text-max: 2.0rem;
+    font-family: var(--next-font-F37stout);
+    line-height: .9;
+    font-size: clamp(2rem, calc((2rem * 100vw) / 799.98px), 2.5rem);
+    font-size: clamp(var(--text-min), calc((var(--text-min) * 100vw) / var(--breakpoint-mobile)), var(--text-max));
+}
 .fill-terrain-grey {
     fill: var(--color-terrain-grey);
 }

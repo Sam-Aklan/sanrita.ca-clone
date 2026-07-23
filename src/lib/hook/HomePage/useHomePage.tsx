@@ -75,7 +75,7 @@ useGSAP(() => {
       },
     });
   },{dependencies:[]});
-  return {paragraphElementRef,planeRef,scrollProgress}
+  return {paragraphElementRef,planeRef,scrollProgress,isDesktop}
 }
 
 export default useHomePage

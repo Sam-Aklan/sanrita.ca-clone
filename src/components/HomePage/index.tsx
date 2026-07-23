@@ -8,7 +8,7 @@ import { Canvas } from '@react-three/fiber'
 import Scene from '../Scene'
 
 const HomePage = () => {
-    const {paragraphElementRef, planeRef,scrollProgress}= useHomePage()
+    const {paragraphElementRef, planeRef,scrollProgress,isDesktop}= useHomePage()
   return (
     <div className=" text-white/95 w-full h-full text-2xl font-bold text-center overflow-hidden home-wrapper relative">
         {/* main content */}
@@ -29,8 +29,10 @@ const HomePage = () => {
 		</Canvas>
 			</div>
 			</div>
+              {isDesktop?<>
               <MapPreferalMargins textRef={paragraphElementRef}/>
               <GridLines />
+              </>:undefined}
             </MapWrapper>
           </HomePageWrapper>
         </div>
