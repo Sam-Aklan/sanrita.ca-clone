@@ -19,16 +19,16 @@ const HomePageWrapper = ({children}:{children?:React.ReactNode}) => {
 						   <Title/>
 							<Sidebar/>
 							<CreativeStudio/>
+						<DropDownBar/>
 
-							<CompassComponent/>
 
 </aside>
 					   :<>
-					   <div className="mobile-only c-footer-mobile_home p-2 fixed bottom-0 left-0 z-40 pointer-events-none flex items-center w-full justify-between after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-75 after:bg-linear-to-t after:from-forest-green after:to-transparent after:z-10 after:backdrop-blur-[5px] after:mask-t-from-20% mobile:hidden">
-							<div className="relative z-20 flex">
+					   <div className="mobile-only c-footer-mobile_home py-2 fixed bottom-0 left-0 z-40 pointer-events-none flex items-center w-full justify-between after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-75 after:bg-linear-to-t after:from-forest-green after:to-transparent after:z-10 after:backdrop-blur-[5px] after:mask-t-from-20% mobile:hidden">
+							<div className="relative z-20 flex w-full">
 
 						<CreativeStudio/>
-						<div className="w-20 h-20 -ml-2 my-auto">
+						<div className="w-20 h-20 mx-auto my-auto flex items-center justify-center">
 							<CompassComponent/>
 						</div>
 							</div>

@@ -4,7 +4,7 @@ import useCompassAnimation from '../../lib/hook/MapPreferalMargins/useCompassAni
 const CompassComponent = () => {
     const {compassRef}= useCompassAnimation()
   return (
-    <CompassIcon width={55} height={55} ref={compassRef} fill='var(--bg-adventure-yellow)' />
+    <CompassIcon width={55} height={55} ref={compassRef} className='fill-adventure-yellow mobile:fill-forest-green' />
   )
 }
 
