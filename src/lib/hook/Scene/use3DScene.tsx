@@ -9,14 +9,17 @@ import { pins } from '../../data/sceneData';
 
 
 const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number }>}) => {
-  const {isDesktop}= useWindowSize()
-  const cameraRef = useRef<CameraType>(null)
+  const {isDesktop}= useWindowSize();
+  const cameraRef = useRef<CameraType>(null);
+
  const cameraPosition = useMemo(()=>{
   return isDesktop? [0,0,10]:[0,0,7]
 }
-  ,[isDesktop])
+  ,[isDesktop]);
+
   const mapRef = useRef<THREE.Group>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
+  const mapRotation = useMemo(()=>isDesktop?[0,0,0]:[-Math.PI/50,0,0],[isDesktop])
   // hold and drag refs
   const dragging = useRef(false)
   const last = useRef([0,0])
@@ -64,7 +67,7 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
       if(!heightMap || !mountain) return
       const image = heightMap.image as HTMLImageElement
       sharedUniforms.uTexelSize.value.set(1/image.width, 1/image.height)
-      // console.log("height", image.height, "width", image.width)
+      
       heightMap.wrapS = THREE.ClampToEdgeWrapping;
       heightMap.wrapT = THREE.ClampToEdgeWrapping;
 
@@ -81,10 +84,10 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
       const camera = cameraRef.current;
       const initialZ = cameraPosition[2];
       const fov = THREE.MathUtils.degToRad(camera.fov);
-      const height = 2 * Math.tan(fov / 2) * initialZ;
+      const height =isDesktop? 2 * Math.tan(fov / 2) * initialZ:2 * Math.tan(fov / 2) * initialZ -4;
       const width = height * camera.aspect;
       return { width, height };
-    }, [size, cameraPosition]);
+    }, [size, cameraPosition,isDesktop]);
 
 
     const pixelToUnit = useMemo(() => {
@@ -145,9 +148,7 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
   return [x, y,z]
 
     },[planeHeightUnits, planeWidthUnits])
-console.log("intial x",initialX)
-console.log("current map postion",mapRef.current?.position)
-console.log("camera z postion",cameraRef.current?.position.z)
+
     useEffect(() => {
       const getPointerCoords = (e: PointerEvent | TouchEvent): [number, number] | null => {
         if ('touches' in e && e.touches && e.touches.length > 0) {
@@ -313,20 +314,6 @@ console.log("camera z postion",cameraRef.current?.position.z)
    
    
   });
-  
-  // useEffect(()=>{
-  //   if(mapScaleGroupRef.current && cameraRef.current && mapRef.current&& scrollProgress.current && scrollProgress.current.value >=0.97){
-  //     console.log("scroll progress",scrollProgress.current)
-  //     mapRef.current.position.setX(0)
-  //     mapRef.current.position.setY(0)
-  //     mapScaleGroupRef.current.scale.set(2.,2.,1.)
-  //     cameraRef.current.position.z = 7
-      
-  //   }
-  // },[isDesktop])
-  console.log("viewPort",viewPort)
-  console.log("dimensions",dimensions)
-  console.log("plane dimensions", planeHeightUnits, planeWidthUnits)
    
  return{
     materialRef,
@@ -354,6 +341,7 @@ console.log("camera z postion",cameraRef.current?.position.z)
     isOverPin,
     setIsHovered,
     cameraPosition,
+    mapRotation,
     isDesktop
 
 }

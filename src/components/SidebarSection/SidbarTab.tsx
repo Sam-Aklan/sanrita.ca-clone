@@ -19,7 +19,7 @@ const SidbarTab = ({keyLabel,isLink=false,isActive,IconNode,setActive,isDropDown
               <div>
                 {IconNode}
               </div>
-              <div className={cn("w-fit text-forest-green relative  after:absolute after:-bottom-0 after:left-0 after:w-0 after:h-px after:bg-forest-green after:transition-all after:duration-250 after:ease-out group-hover:after:w-full text-[12px]", isActive?"after:w-full":"after:w-0")}>
+              <div className={cn("w-fit text-forest-green relative  after:absolute after:-bottom-0 after:left-0 after:w-0 after:h-px after:bg-forest-green after:transition-all after:duration-250 after:ease-out group-hover:after:w-full mobile:text-xs text-[8px]", isActive?"after:w-full":"after:w-0")}>
                 {keyLabel}
               </div>
             </div>

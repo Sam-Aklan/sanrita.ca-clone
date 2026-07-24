@@ -34,7 +34,7 @@ const Scene = ({mapPlaneRef, scrollProgress}:SceneProps) => {
     onPointerUpHandler,pins,pinsGroupRef,
     planeHeightUnits,planeWidthUnits,pointerUv,
     resolutionRef,setIsHovered, sharedUniforms,
-    size, toPlanePos, isDesktop
+    size, toPlanePos, isDesktop, mapRotation
   }= use3DScene({scrollProgress:scrollProgress})
 
 console.log("progress",scrollProgress)
@@ -63,7 +63,7 @@ console.log("progress",scrollProgress)
         />
       )}
     <group position={[initialX,0.,-0.3]} ref={mapRef}>
-      <group ref={mapScaleGroupRef} name="mapScaleGroup">
+      <group ref={mapScaleGroupRef} name="mapScaleGroup" rotation={mapRotation as [number, number, number]}>
         <mesh 
           renderOrder={100} 
           onPointerDown={onPointerDownHandler}

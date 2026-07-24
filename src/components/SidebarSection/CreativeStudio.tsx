@@ -7,7 +7,7 @@ const CreativeStudio = () => {
         <p>stories move off-trails</p>
       </h1>
 
-      <h1 className="col-1 row-1 font-f37stout text-h1-like text-adventure-yellow flex flex-col uppercase mobile:[clip-path:inset(0px_0px_0px_calc(var(--scroll-aside-width)-var(--scroll-aside-title)))] [clip-path:inset(0px)]">
+      <h1 className="col-1 row-1 font-f37stout mobile:text-h1-like text-h3-like text-adventure-yellow flex flex-col uppercase mobile:[clip-path:inset(0px_0px_0px_calc(var(--scroll-aside-width)-var(--scroll-aside-title)))] [clip-path:inset(0px)]">
         <p>A creative studio</p>
         <p>where brands and</p>
         <p>stories move off-trails</p>

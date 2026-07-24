@@ -68,8 +68,8 @@ const DropDownBar = () => {
 
   return (
     <div className='mobile:col-4 mobile:row-1 mobile:translate-x-[calc(100%-var(--scroll-aside))] c-trail-box | mobile:relative mobile:h-40 w-47.5 h-10 absolute top-0 right-0 m-3 z-20' >
-        <div className='grid grid-rows-[auto_auto_1fr] m-6 place-self-end overflow-hidden w-47.5  max-mobile:overflow-visible max-mobile:absolute max-mobile:top-0 max-mobile:m-0 max-mobile:[clip-path:polygon(0%_0%,calc(100%-15px)_0%,100%_15px,100%_100%,0%_100%)] pointer-events-auto ' ref={DropDownRef}>
-            <div className='group pointer-events-auto row-1 flex items-center cursor-pointer relative overflow-hidden'>
+        <div className='grid grid-rows-[auto_auto_350px] m-6 place-self-end overflow-hidden w-47.5  max-mobile:overflow-visible max-mobile:absolute max-mobile:top-0 max-mobile:m-0 max-mobile:[clip-path:polygon(0%_0%,calc(100%-15px)_0%,100%_15px,100%_100%,0%_100%)] pointer-events-auto ' ref={DropDownRef}>
+            <div className='group pointer-events-none row-1 flex items-center cursor-pointer relative overflow-hidden'>
                 <div className="w-full h-10">
                     <div className='c-button w-full h-full bg-adventure-yellow [clip-path:polygon(0%_0%,calc(100%-10px)_0%,100%_10px,100%_100%,0%_100%)] place-content-center'
                     onClick={()=>{
@@ -120,7 +120,7 @@ const DropDownBar = () => {
 
                         {/* board */}
 
-                        <div className='row-start-3 row-span-1 bg-adventure-yellow cursor-default! p-5  pointer-events-none'
+                        <div className='row-start-3 row-span-1 bg-adventure-yellow cursor-default! mobile:p-5 px-5 py-2.5  pointer-events-none '
                         ref={boardRef}>
                             <Sidebar isDropDown/>
                         </div>
