@@ -20,7 +20,7 @@ const useCompassAnimation = () => {
       const onTouchMoveCallback = useCallback((e:PointerEvent | TouchEvent)=>{
         const coords = getPointerCoords(e);
 
-        if(!coords) return
+        if(!coords || !compassRef.current) return
         const [clientX, clientY] = coords;
 
          const rect = compassRef.current.getBoundingClientRect()

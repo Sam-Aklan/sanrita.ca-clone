@@ -1,25 +1,13 @@
 import * as THREE from 'three';
 
-import { useCallback, useEffect,useMemo,useRef, useState, type RefObject } from 'react';
-import {Environment, OrbitControls, PerspectiveCamera, useTexture} from "@react-three/drei";
-import { useThree, useFrame, type ThreeEvent } from '@react-three/fiber';
+import { type RefObject } from 'react';
+import {Environment,  PerspectiveCamera,} from "@react-three/drei";
 import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShader';
-import type { PerspectiveCamera as CameraType } from 'three'
 import { Pin } from './Pin';
 import { BlobSimulation } from './BlobSimulation';
 import CloudsSimulation from './CloudsSimulation';
 import use3DScene from '../lib/hook/Scene/use3DScene';
 
-type PinData = {
-  id: number
-  title: string
-  u: number
-  v: number
-  z?: number
-  radius?: number
-  color?: string
-  image?:string
-}
 interface SceneProps{
   mapPlaneRef:RefObject<THREE.PlaneGeometry | null>
   scrollProgress: RefObject<{ value: number }>
@@ -37,7 +25,6 @@ const Scene = ({mapPlaneRef, scrollProgress}:SceneProps) => {
     size, toPlanePos, isDesktop, mapRotation
   }= use3DScene({scrollProgress:scrollProgress})
 
-console.log("progress",scrollProgress)
   return (
     <>
     <Environment files={"./city-lightings.hdr"}/>

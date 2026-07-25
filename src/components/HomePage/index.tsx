@@ -6,6 +6,8 @@ import GridLines from '../map-section/GridLines'
 import useHomePage from '../../lib/hook/HomePage/useHomePage'
 import { Canvas } from '@react-three/fiber'
 import Scene from '../Scene'
+import { SpotIcon1, SpotIcon2, SpotIcon3 } from '../icons/Spots'
+import SpiderIcon from '../icons/SpiderIcon'
 
 const HomePage = () => {
     const {paragraphElementRef, planeRef,scrollProgress,isDesktop}= useHomePage()

@@ -22,6 +22,7 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
   const mapRotation = useMemo(()=>isDesktop?[0,0,0]:[-Math.PI/50,0,0],[isDesktop])
   // hold and drag refs
   const dragging = useRef(false)
+  const dragOffset = useRef({ x: 0, y: 0 })
   const last = useRef([0,0])
   const pinsGroupRef = useRef<THREE.Group>(null)
   const mapScaleGroupRef = useRef<THREE.Group>(null)
@@ -35,8 +36,8 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
   uBlobTexture: { value: null }, // Added for blob simulation
 
   uTexelSize: { value: new THREE.Vector2() },
-  uHeightScale: { value: 4.},
-    uStrength: {value:.8},
+  uHeightScale: { value: 2.},
+    uStrength: {value:.5},
   uLightDir: { value: new THREE.Vector3(1,1,1).normalize() }
    }).current;
 
@@ -149,8 +150,7 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
 
     },[planeHeightUnits, planeWidthUnits])
 
-    useEffect(() => {
-      const getPointerCoords = (e: PointerEvent | TouchEvent): [number, number] | null => {
+     const getPointerCoords = useCallback((e: PointerEvent | TouchEvent): [number, number] | null => {
         if ('touches' in e && e.touches && e.touches.length > 0) {
           return [e.touches[0].clientX, e.touches[0].clientY];
         }
@@ -158,35 +158,41 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
           return [(e as PointerEvent).clientX, (e as PointerEvent).clientY];
         }
         return null;
-      };
+      },[]);
 
-      const handleGlobalPointerMove = (e: PointerEvent | TouchEvent) => {
+      const handleGlobalPointerMove = useCallback((e: PointerEvent | TouchEvent) => {
         if (!dragging.current || !mapRef.current) return;
 
         const p = scrollProgress.current ? scrollProgress.current.value : 0;
-        if (p < 1) return;
 
+        if (isDesktop && p < 1) return
         const coords = getPointerCoords(e);
         if (!coords) return;
         const [clientX, clientY] = coords;
-
         const dx = clientX - last.current[0];
         const dy = clientY - last.current[1];
         last.current = [clientX, clientY];
 
         const moveScale = pixelToUnit > 0 ? pixelToUnit : 0.008;
 
-        mapRef.current.position.x += dx * moveScale;
-        mapRef.current.position.y -= dy * moveScale;
+        dragOffset.current.x += dx * moveScale;
+        dragOffset.current.y -= dy * moveScale;
 
-        mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x, -10.0, 10.0);
-        mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y, -5.0, 5.0);
-      };
+        dragOffset.current.x = THREE.MathUtils.clamp(dragOffset.current.x, -10.0, 10.0);
+        dragOffset.current.y = THREE.MathUtils.clamp(dragOffset.current.y, -5.0, 5.0);
 
-      const handleGlobalPointerEnd = () => {
+        const transitionX = THREE.MathUtils.lerp(initialX, 0, p);
+        mapRef.current.position.x = transitionX + dragOffset.current.x;
+        mapRef.current.position.y = dragOffset.current.y;
+      },[pixelToUnit, isDesktop]);
+
+      const handleGlobalPointerEnd = useCallback(() => {
         dragging.current = false;
         setIsDragging(false);
-      };
+      },[]);
+
+    useEffect(() => {
+     
 
       window.addEventListener('pointermove', handleGlobalPointerMove, { passive: true });
       window.addEventListener('pointerup', handleGlobalPointerEnd);
@@ -263,37 +269,44 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
     
     if(isDesktop){
       const currentScaleX = THREE.MathUtils.lerp(1, targetScaleX, p);
-    const currentScaleY = THREE.MathUtils.lerp(1, targetScaleY, p);
+      const currentScaleY = THREE.MathUtils.lerp(1, targetScaleY, p);
 
-    if (mapScaleGroupRef.current) {
-      mapScaleGroupRef.current.scale.set(currentScaleX, currentScaleY, 1);
-    }
-
-    if (mapRef.current) {
-      if (p < 1) {
-        mapRef.current.position.x = THREE.MathUtils.lerp(initialX, 0, p);
-        mapRef.current.position.y = 0;
+      if (mapScaleGroupRef.current) {
+        mapScaleGroupRef.current.scale.set(currentScaleX, currentScaleY, 1);
       }
-    }
 
-    const currentWidthPx = targetHeightPx * currentScaleX;
-    const currentHeightPx = targetWidthPx * currentScaleY;
-    resolutionRef.current.set(currentWidthPx, currentHeightPx);
+      if (mapRef.current) {
+        const transitionX = p < 1 ? THREE.MathUtils.lerp(initialX, 0, p) : 0;
+        mapRef.current.position.x = p>=1?transitionX + dragOffset.current.x:transitionX;
+        mapRef.current.position.y = p>=1?dragOffset.current.y:dragOffset.current.y - dragOffset.current.y * (1-p);
+      }
+      if(materialRef.current){
+         materialRef.current.uniforms.uHeightScale.value = THREE.MathUtils.lerp(2,6,p)
+      materialRef.current.uniforms.uStrength.value = THREE.MathUtils.lerp(.5,1.5,p)
+      }
+      // if(mapScaleGroupRef.current){
+      //   const pMapper = THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(.5,1,0,1,p),0,1);
+      //   mapScaleGroupRef.current.rotation.x = THREE.MathUtils.lerp(0,-Math.PI/50,pMapper)
+      // }
 
-    if (pinsGroupRef.current) {
-      pinsGroupRef.current.children.forEach((pinGroup, index) => {
-        const pinData = pins[index];
-        if (pinGroup instanceof THREE.Group && pinData) {
-          pinGroup.position.x = (pinData.u - 0.5) * planeHeightUnits * currentScaleX;
-          pinGroup.position.y = (pinData.v - 0.5) * planeWidthUnits * currentScaleY;
-        }
-      });
-    }
+      const currentWidthPx = targetHeightPx * currentScaleX;
+      const currentHeightPx = targetWidthPx * currentScaleY;
+      resolutionRef.current.set(currentWidthPx, currentHeightPx);
 
-     const pMapper = THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(p, .9, 1., 0, 1.), 0, 1)
-    if (cameraRef.current) {
-      cameraRef.current.position.z = THREE.MathUtils.lerp(10, 7, pMapper)
-    }
+      if (pinsGroupRef.current) {
+        pinsGroupRef.current.children.forEach((pinGroup, index) => {
+          const pinData = pins[index];
+          if (pinGroup instanceof THREE.Group && pinData) {
+            pinGroup.position.x = (pinData.u - 0.5) * planeHeightUnits * currentScaleX;
+            pinGroup.position.y = (pinData.v - 0.5) * planeWidthUnits * currentScaleY;
+          }
+        });
+      }
+
+      const pMapper = THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(p, .9, 1., 0, 1.), 0, 1)
+      if (cameraRef.current) {
+        cameraRef.current.position.z = THREE.MathUtils.lerp(10, 7, pMapper)
+      }
 
     } else {
       if (mapScaleGroupRef.current) {
@@ -301,13 +314,12 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
       }
 
       if (mapRef.current) {
-      if (p < 1) {
-        mapRef.current.position.x = THREE.MathUtils.lerp(initialX, 0, p);
-        mapRef.current.position.y = 0;
+        const transitionX = THREE.MathUtils.lerp(initialX, 0, p);
+        mapRef.current.position.x = transitionX + dragOffset.current.x;
+        mapRef.current.position.y = dragOffset.current.y;
       }
-    }
 
-    resolutionRef.current.set(targetHeightPx, targetWidthPx);
+      resolutionRef.current.set(targetHeightPx, targetWidthPx);
 
     }
 

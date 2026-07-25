@@ -1,5 +1,9 @@
 import { Html } from "@react-three/drei"
 import { useState, useRef, useEffect } from "react"
+import AboutSpot from "./icons/AboutSpot"
+import { SpotIcon1 } from "./icons/Spots"
+import { useFrame } from "@react-three/fiber"
+import AboutIcon from "./icons/AboutIcon"
 
 type PinType ={
     position:[number,number,number],
@@ -13,6 +17,7 @@ type PinType ={
 function Pin({ position, title, image, radius, color, onHoverChange }: PinType) {
   const [hovered, setHovered] = useState(false)
   const hoverTimeoutRef = useRef<number | null>(null)
+  const iconWrapperRef = useRef<HTMLDivElement>(null)
 
   const handlePointerOver = () => {
     if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
@@ -39,6 +44,12 @@ function Pin({ position, title, image, radius, color, onHoverChange }: PinType) 
       if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
     }
   }, [])
+  useFrame(({camera})=>{
+    if(!iconWrapperRef.current) return
+    const scale = (7 / camera.position.z) * .8;
+    // console.log("scale",scale)
+    iconWrapperRef.current.style.transform = `scale(${scale})`
+  })
 
   return (
     <group position={position}>
@@ -48,8 +59,32 @@ function Pin({ position, title, image, radius, color, onHoverChange }: PinType) 
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
       >
-        <sphereGeometry args={[radius, 16, 16]} />
-        <meshStandardMaterial color={color ? color : "red"} />
+        <planeGeometry args={[1,1]} />
+        <meshBasicMaterial transparent={true}  depthWrite={false} color={color} />
+        <Html
+         center
+         className="pointer-events-none flex items-center justify-center"
+         position={[0,0,0]}
+         >
+          <div
+         className="origin-center "
+          ref={iconWrapperRef}>
+
+         <SpotIcon1 />
+          </div>
+        </Html>
+        <Html
+         center
+         className="pointer-events-none flex items-center justify-center"
+         position={[0,0,0]}
+         >
+          <div
+         className="origin-center "
+          // ref={iconWrapperRef}
+          >
+            <AboutIcon fill="var(--color-adventure-yellow)"/>
+          </div>
+        </Html>
       </mesh>
 
       {/* HTML Tooltip */}
