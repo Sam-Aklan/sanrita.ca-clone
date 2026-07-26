@@ -7,7 +7,7 @@ const SpotIcon1 = (props:SVGProps<SVGElement>) => {
    viewBox="0 0 44.929799 44.703169"
    version="1.1"
    xmlns="http://www.w3.org/2000/svg"
-   className="w-10 h-10 hover:scale-105 transition-transform duration-300">
+   className="w-15 h-15 mobile:w-20 mobile:h-20 transition-transform duration-300">
  
   <path
   style={{

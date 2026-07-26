@@ -72,8 +72,8 @@ vec3 blobShape(vec2 uv)
 {
     // 1. Height map integration & distortion
     float h = texture2D(uHeightMap, uv).r;
-    h = smoothstep(0.03, 0.45, h);
-    h = pow(h, 1.6);
+    h = smoothstep(0.03, 0.2, h);
+    h = pow(h, .8);
     
     float noise1 = snoise(uv * 15.0 + uTime * 2.0);
     float noise2 = snoise(uv * 15.0 - uTime * 2.0 + 100.0);

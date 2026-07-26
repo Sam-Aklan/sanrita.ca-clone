@@ -5,7 +5,7 @@ import { useTexture} from "@react-three/drei";
 import { useThree, useFrame, type ThreeEvent } from '@react-three/fiber';
 import type { PerspectiveCamera as CameraType } from 'three'
 import useWindowSize from '../useWindowSize';
-import { pins } from '../../data/sceneData';
+import { disktopPins,mobilePins } from '../../data/sceneData';
 
 
 const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number }>}) => {
@@ -28,7 +28,7 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
   const mapScaleGroupRef = useRef<THREE.Group>(null)
   const resolutionRef = useRef<THREE.Vector2>(new THREE.Vector2(1024, 1024))
 // textures
-    const [mountain, heightMap]= useTexture(['./mountain-sea/optimize-image.jpg','./mountain-sea/Mountain By Sea Heightmap.png']);
+    const [mountain, heightMap]= useTexture(['./mountain-sea/optimize-image.webp','./mountain-sea/Mountain By Sea Heightmap.png']);
 // uniforms
    const sharedUniforms = useRef({
     uHeightMap: { value: heightMap },
@@ -173,7 +173,7 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
         const dy = clientY - last.current[1];
         last.current = [clientX, clientY];
 
-        const moveScale = pixelToUnit > 0 ? pixelToUnit : 0.008;
+        const moveScale = pixelToUnit > 0 ? pixelToUnit * 2. : 0.008;
 
         dragOffset.current.x += dx * moveScale;
         dragOffset.current.y -= dy * moveScale;
@@ -260,6 +260,8 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
      }
     },[isDesktop])
 
+   const pins= useMemo(()=>isDesktop?disktopPins: mobilePins,[isDesktop])
+
   useFrame(() => {
     const p = scrollProgress.current ? scrollProgress.current.value : 0;
     
@@ -281,13 +283,13 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
         mapRef.current.position.y = p>=1?dragOffset.current.y:dragOffset.current.y - dragOffset.current.y * (1-p);
       }
       if(materialRef.current){
-         materialRef.current.uniforms.uHeightScale.value = THREE.MathUtils.lerp(2,6,p)
-      materialRef.current.uniforms.uStrength.value = THREE.MathUtils.lerp(.5,1.5,p)
+         materialRef.current.uniforms.uHeightScale.value = THREE.MathUtils.lerp(2,8,p)
+      materialRef.current.uniforms.uStrength.value = THREE.MathUtils.lerp(.5,3,p)
       }
-      // if(mapScaleGroupRef.current){
-      //   const pMapper = THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(.5,1,0,1,p),0,1);
-      //   mapScaleGroupRef.current.rotation.x = THREE.MathUtils.lerp(0,-Math.PI/50,pMapper)
-      // }
+      if(mapScaleGroupRef.current){
+        const pMapper =  THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(0.,1,0.5,1,scrollProgress.current.value),0,1);
+        mapScaleGroupRef.current.rotation.x = THREE.MathUtils.lerp(0,-Math.PI/30,pMapper)
+      }
 
       const currentWidthPx = targetHeightPx * currentScaleX;
       const currentHeightPx = targetWidthPx * currentScaleY;
