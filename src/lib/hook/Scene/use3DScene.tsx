@@ -19,7 +19,7 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
 
   const mapRef = useRef<THREE.Group>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
-  const mapRotation = useMemo(()=>isDesktop?[0,0,0]:[-Math.PI/50,0,0],[isDesktop])
+  const mapRotation = useMemo(()=>isDesktop?[0,0,0]:[-Math.PI/40,0,0],[isDesktop])
   // hold and drag refs
   const dragging = useRef(false)
   const dragOffset = useRef({ x: 0, y: 0 })
@@ -288,7 +288,7 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
       }
       if(mapScaleGroupRef.current){
         const pMapper =  THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(0.,1,0.5,1,scrollProgress.current.value),0,1);
-        mapScaleGroupRef.current.rotation.x = THREE.MathUtils.lerp(0,-Math.PI/30,pMapper)
+        mapScaleGroupRef.current.rotation.x = THREE.MathUtils.lerp(0,-Math.PI/23,pMapper)
       }
 
       const currentWidthPx = targetHeightPx * currentScaleX;

@@ -1,9 +1,6 @@
 import { Html } from "@react-three/drei"
-import { useState, useRef, useEffect, useCallback } from "react"
-import AboutSpot from "./icons/AboutSpot"
-import { SpotIcon1 } from "./icons/Spots"
+import { useState, useRef,type JSX } from "react"
 import { useFrame } from "@react-three/fiber"
-import AboutIcon from "./icons/AboutIcon"
 import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
 
@@ -12,13 +9,14 @@ gsap.registerPlugin(useGSAP)
 type PinType ={
     position:[number,number,number],
     title?:string,
-    radius:number,
     color?:string,
+    SpotNode:JSX.Element,
+    IconNode:JSX.Element,
     image?:string,
     onHoverChange?: (hovered: boolean) => void,
 }
 
-function Pin({ position, title, image, radius, color, onHoverChange }: PinType) {
+function Pin({ position, title, image, color,IconNode,SpotNode, onHoverChange }: PinType) {
   const [hovered, setHovered] = useState(false)
   const hoverTimeoutRef = useRef<number | null>(null)
   const spotWrapperRef = useRef<HTMLDivElement>(null)
@@ -81,7 +79,7 @@ function Pin({ position, title, image, radius, color, onHoverChange }: PinType) 
         onPointerOut={mouseLeaveCallback}
       >
         <planeGeometry args={[1,1]} />
-        <meshBasicMaterial transparent={true}   depthWrite={false} color={color} />
+        <meshBasicMaterial transparent={true} opacity={0}   depthWrite={false} color={color} />
         <Html
          center
          className="pointer-events-none flex items-center justify-center"
@@ -91,7 +89,7 @@ function Pin({ position, title, image, radius, color, onHoverChange }: PinType) 
          className="origin-center"
           ref={spotWrapperRef}>
 
-         <SpotIcon1 />
+         {SpotNode}
           </div>
         </Html>
         <Html
@@ -103,7 +101,7 @@ function Pin({ position, title, image, radius, color, onHoverChange }: PinType) 
          className="origin-center "
           ref={iconWrapperRef}
           >
-            <AboutIcon fill="var(--color-adventure-yellow)" className="w-6.75 h-5 mobile:w-8 mobile:h-6"/>
+            {IconNode}
           </div>
         </Html>
       </mesh>

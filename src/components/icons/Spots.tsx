@@ -1,13 +1,14 @@
 import type { SVGProps } from "react"
 
 
-const SpotIcon1 = (props:SVGProps<SVGElement>) => {
+const SpotIcon1 = ({className, fill, ...props}:SVGProps<SVGSVGElement>) => {
   return (
     <svg
    viewBox="0 0 44.929799 44.703169"
    version="1.1"
    xmlns="http://www.w3.org/2000/svg"
-   className="w-15 h-15 mobile:w-20 mobile:h-20 transition-transform duration-300">
+   className={`transition-transform duration-300 ${className || "w-10 h-10"}`}
+   >
  
   <path
   style={{
@@ -20,13 +21,14 @@ const SpotIcon1 = (props:SVGProps<SVGElement>) => {
 </svg>
   )
 }
-const SpotIcon2 = (props:SVGProps<SVGElement>) => {
+const SpotIcon2 = ({className, fill, ...props}:SVGProps<SVGSVGElement>) => {
   return (
      <svg
    viewBox="0 0 44.929799 44.703169"
    version="1.1"
    xmlns="http://www.w3.org/2000/svg"
-   className="w-10 h-10 hover:scale-105 transition-transform duration-300">
+   className={`transition-transform duration-300 ${className || "w-10 h-10"}`}
+   {...props}>
  
   <path
   style={{
@@ -34,17 +36,18 @@ const SpotIcon2 = (props:SVGProps<SVGElement>) => {
     strokeDasharray:"none",
   }}
      d="m 43.348849,22.395922 c 0,5.801045 -3.614801,11.00485 -7.416401,14.80645 -3.8016,3.801599 -8.458061,6.190066 -14.259107,6.190066 -5.801046,0 -10.289781,-2.414305 -13.9072804,-6.205359 C 4.1485612,33.396026 0.54101379,28.24125 0.54101379,22.440204 0.54101379,16.639159 3.0167259,11.450189 7.0336466,7.6453328 11.050567,3.8404764 17.234129,1.4022952 23.035174,1.4022952 c 5.801046,0 11.074711,2.2677993 14.719952,6.0737585 3.645242,3.8059593 5.593723,9.1188223 5.593723,14.9198683 z" 
-     className="fill-black stroke-adventure-yellow stroke-[2.8] "/>
+     className="fill-black stroke-adventure-yellow stroke-5 "/>
 </svg>
   )
 }
-const SpotIcon3 = (props:SVGProps<SVGElement>) => {
+const SpotIcon3 = ({className, fill, ...props}:SVGProps<SVGSVGElement>) => {
   return (
     <svg
    viewBox="0 0 44.929799 44.703169"
    version="1.1"
    xmlns="http://www.w3.org/2000/svg"
-   className="w-20 h-20 hover:scale-105 transition-transform duration-300">
+   className={`${className || "w-20 h-20 hover:scale-105 transition-transform duration-300"}`}
+   {...props}>
  
   <path
   style={{
@@ -52,11 +55,11 @@ const SpotIcon3 = (props:SVGProps<SVGElement>) => {
     strokeDasharray:"none",
   }}
     d="m 42.305562,22.154459 c 0,2.89852 -1.469281,5.282398 -2.778762,7.781952 -1.30948,2.499554 -2.66707,5.352401 -4.472176,7.251888 -1.805106,1.899487 -4.540403,3.405683 -6.818039,4.464839 -2.277637,1.059157 -3.840993,0.478323 -6.595492,0.478323 -2.754501,0 -5.484004,-0.663886 -7.731895,-1.442363 -2.247891,-0.778476 -3.9291885,-2.336903 -5.6468784,-4.231121 -1.71769,-1.894217 -3.356423,-4.30088 -4.6635729,-6.620528 -1.3071499,-2.319648 -2.2326788,-4.74248 -2.2326788,-7.641 0,-2.898519 0.6242838,-5.627922 1.6763798,-8.076628 1.0520959,-2.448706 2.0114985,-4.3186335 3.918845,-6.219748 1.9073465,-1.9011143 4.4871293,-3.5412304 7.2507813,-4.7001537 2.763652,-1.1589232 5.626263,-1.7959492 8.380762,-1.7959492 2.754499,0 5.392719,-0.2533559 7.787329,0.7784426 2.39461,1.0317986 4.698904,3.9741374 6.429767,5.8758028 1.730862,1.9016656 3.334212,4.0480475 4.191201,6.4190455 0.856989,2.370998 1.304429,4.778678 1.304429,7.677198 z" 
-     className="fill-black stroke-adventure-yellow stroke-[2.8] "/>
+     className="fill-black stroke-adventure-yellow stroke-5 "/>
 </svg>
   )
 }
-const SpotIcon4 = (props:SVGProps<SVGElement>) => {
+const SpotIcon4 = ({className, fill, ...props}:SVGProps<SVGElement>) => {
   return (
     <div>SpotIcon1</div>
   )

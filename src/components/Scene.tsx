@@ -82,7 +82,8 @@ const Scene = ({mapPlaneRef, scrollProgress}:SceneProps) => {
             key={pin.id}
             title={pin.title}
             image={pin.image}
-            radius={pin.radius ?? 0.03}
+            IconNode={pin.IconNode}
+            SpotNode={pin.SpotNode}
             color={pin.color ?? 'white'}
             position={toPlanePos(
               pin.u,
