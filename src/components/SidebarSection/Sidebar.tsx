@@ -30,7 +30,7 @@ const tabs = [
 function Sidebar({isDropDown=false}:{isDropDown?:boolean}) {
   const [activeTab, setActiveTab] = useState("map")
   return (
-    <div className={cn('c-icons || w-full h-full flex-1 flex flex-col justify-center gap-0 [&>a]:pointer-events-auto [&>a]:flex *:py-[6px] *:font-mono font-thin max-mobile:*:py-10 col-2 row-3 relative ',isDropDown?undefined:"-translate-x-(--scroll-aside) ")}>
+    <div className={cn('c-icons || w-full h-full flex-1 flex flex-col justify-center gap-0 [&>a]:pointer-events-auto [&>a]:flex *:py-[6px] *:font-mono font-thin max-mobile:*:py-2 col-2 row-3 relative ',isDropDown?undefined:"-translate-x-(--scroll-aside) ")}>
       {tabs.map((icon,)=> <SidbarTab 
       key={icon.key} 
       keyLabel={icon.key} 

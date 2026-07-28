@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { useFBO } from '@react-three/drei';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { fragmentBlobShader, vertexBlobShader } from '../lib/shaders/blobShader';
+import useWindowSize from '../lib/hook/useWindowSize';
 
 type BlobSimulationProps = {
   resolution?: number;
@@ -43,7 +44,7 @@ export const BlobSimulation = ({
 
   const scene = useMemo(() => new THREE.Scene(), []);
   const camera = useMemo(() => new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1), []);
-
+  const {isDesktop}= useWindowSize()
   const uniforms = useRef({
     uResolution: { value: new THREE.Vector2(resolution, resolution) },
     uMouse: { value: new THREE.Vector2(-1, -1) },
@@ -53,6 +54,7 @@ export const BlobSimulation = ({
     uIdle: { value: 0.0 },
     uTime: { value: 0.0 },
     uBlobSize: { value: 0.03 },
+    uIsMobile : {value:!isDesktop?1:0},
     uPrevTrail: { value: fbo1.texture },
     uHeightMap: { value: heightMap },
     uAspect: { value: 1.0 },
@@ -102,15 +104,38 @@ export const BlobSimulation = ({
   }, [camera, dimensions.width, dimensions.height]);
 
   // Update heightMap uniform if it changes
-  useMemo(() => {
+  useEffect(() => {
     uniforms.current.uHeightMap.value = heightMap;
   }, [heightMap]);
+
+  useEffect(() => {
+    uniforms.current.uIsMobile.value = isDesktop ? 0.0 : 1.0;
+    uniforms.current.uBlobSize.value = isDesktop ? 0.03 : 0.009;
+  }, [isDesktop]);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     uniforms.current.uTime.value = time;
+    uniforms.current.uIsMobile.value = isDesktop ? 0.0 : 1.0;
+    uniforms.current.uBlobSize.value = THREE.MathUtils.lerp(0.009, 0.03, +isDesktop);
+
     if (resolutionRef.current) {
       uniforms.current.uResolution.value.copy(resolutionRef.current);
+    }
+
+    let scaleX = 1;
+    let scaleY = 1;
+    if (mapRef.current) {
+      const scaleGroup = mapRef.current.getObjectByName('mapScaleGroup');
+      if (scaleGroup) {
+        scaleX = scaleGroup.scale.x;
+        scaleY = scaleGroup.scale.y;
+      }
+    }
+
+    if (dimensions.width && dimensions.height) {
+      uniforms.current.uAspect.value = (dimensions.width * scaleX) / (dimensions.height * scaleY);
+    } else if (resolutionRef.current) {
       uniforms.current.uAspect.value = resolutionRef.current.x / resolutionRef.current.y;
     }
 
@@ -192,10 +217,10 @@ export const BlobSimulation = ({
     } else {
       pressure = isHovered ? 1.0 : 0.0;
     }
-
+    
     // Update pressure uniform
     uniforms.current.uMousePressure.value = pressure;
-
+    uniforms.current.uBlobSize.value = THREE.MathUtils.lerp(0.009,0.03,+isDesktop)
     // Swap FBOs
     const readFBO = activeFBO === fbo1 ? fbo2 : fbo1;
     const writeFBO = activeFBO === fbo1 ? fbo1 : fbo2;

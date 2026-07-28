@@ -16,10 +16,10 @@ function useWindowSize(debounceDelay = 300) {
   });
 
   const getBreakpoints = () => ({
-    isMobile: window.matchMedia('(max-width: 767px)').matches,
-    isTablet: window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches,
-    isDesktop: window.matchMedia('(min-width: 1024px) and (max-width: 1279px)').matches,
-    isXlarge: window.matchMedia('(min-width: 1280px)').matches,
+    // isMobile: window.matchMedia('(max-width: 767px)').matches,
+    // isTablet: window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches,
+    isDesktop: window.matchMedia('(min-width: 800px)').matches,
+    // isXlarge: window.matchMedia('(min-width: 1280px)').matches,
   });
 
   const [windowSize, setWindowSize] = useState<WindowSize>(getSize);
@@ -40,10 +40,10 @@ function useWindowSize(debounceDelay = 300) {
 
     // ---- Breakpoint listeners ----
     const mediaQueries = [
-      window.matchMedia('(max-width: 767px)'),
-      window.matchMedia('(min-width: 768px) and (max-width: 1023px)'),
-      window.matchMedia('(min-width: 1024px) and (max-width: 1279px)'),
-      window.matchMedia('(min-width: 1280px)'),
+      // window.matchMedia('(max-width: 767px)'),
+      // window.matchMedia('(min-width: 768px) and (max-width: 1023px)'),
+      window.matchMedia('(min-width: 800px)'),
+      // window.matchMedia('(min-width: 1280px)'),
     ];
 
     const handleMediaChange = () => {

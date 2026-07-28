@@ -1,68 +1,121 @@
 import { Html } from "@react-three/drei"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef,type JSX } from "react"
+import { useFrame } from "@react-three/fiber"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+
+gsap.registerPlugin(useGSAP)
 
 type PinType ={
     position:[number,number,number],
     title?:string,
-    radius:number,
     color?:string,
+    SpotNode:JSX.Element,
+    IconNode:JSX.Element,
     image?:string,
     onHoverChange?: (hovered: boolean) => void,
 }
 
-function Pin({ position, title, image, radius, color, onHoverChange }: PinType) {
+function Pin({ position, title, image, color,IconNode,SpotNode, onHoverChange }: PinType) {
   const [hovered, setHovered] = useState(false)
   const hoverTimeoutRef = useRef<number | null>(null)
+  const spotWrapperRef = useRef<HTMLDivElement>(null)
+  const iconWrapperRef = useRef<HTMLDivElement>(null)
+  const hoverScaleRef = useRef({ value: 1 })
 
-  const handlePointerOver = () => {
-    if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
+  // Cleanup timer on unmount
+  const {contextSafe}= useGSAP(()=>{
+
+       return () => {
+      if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
+    }
+  },[])
+
+  const mouseEnterCallback = contextSafe(()=>{
+     if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
     onHoverChange?.(true)
     // Wait 150ms before showing the tooltip to filter out transient/fast sweeps
     hoverTimeoutRef.current = window.setTimeout(() => {
       setHovered(true)
-    }, 150)
-  }
+    }, 500);
 
-  const handlePointerOut = () => {
-    if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
+    gsap.to(hoverScaleRef.current, {
+      value: 1.25,
+      duration: 0.3,
+      overwrite: "auto",
+    })
+  })
+
+  const mouseLeaveCallback = contextSafe(()=>{
+     if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
     onHoverChange?.(false)
     // Wait 150ms before hiding to prevent abrupt flashing on quick leaves
     hoverTimeoutRef.current = window.setTimeout(() => {
       setHovered(false)
-    }, 150)
+    }, 500)
     setHovered(false)
-  }
 
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (hoverTimeoutRef.current) window.clearTimeout(hoverTimeoutRef.current)
-    }
-  }, [])
+    gsap.to(hoverScaleRef.current, {
+      value: 1,
+      duration: 0.3,
+      overwrite: "auto",
+    })
+  })
+ 
+  useFrame(({camera})=>{
+    if(!spotWrapperRef.current && iconWrapperRef.current) return
+    const scale = (7 / camera.position.z) * .5 * hoverScaleRef.current.value;
+    // console.log("scale",scale)
+    spotWrapperRef.current.style.transform = `scale(${scale})`
+    iconWrapperRef.current.style.transform = `scale(${scale})`
+  })
 
   return (
     <group position={position}>
       
       {/* 3D Pin Dot */}
       <mesh
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
+        onPointerOver={mouseEnterCallback}
+        onPointerOut={mouseLeaveCallback}
       >
-        <sphereGeometry args={[radius, 16, 16]} />
-        <meshStandardMaterial color={color ? color : "red"} />
+        <planeGeometry args={[1,1]} />
+        <meshBasicMaterial transparent={true} opacity={0}   depthWrite={false} color={color} />
+        <Html
+         center
+         className="pointer-events-none flex items-center justify-center"
+         position={[0,0,0]}
+         >
+          <div
+         className="origin-center"
+          ref={spotWrapperRef}>
+
+         {SpotNode}
+          </div>
+        </Html>
+        <Html
+         center
+         className="pointer-events-none flex items-center justify-center"
+         position={[0,0,0]}
+         >
+          <div
+         className="origin-center "
+          ref={iconWrapperRef}
+          >
+            {IconNode}
+          </div>
+        </Html>
       </mesh>
 
       {/* HTML Tooltip */}
       {hovered && (
         <Html 
           pointerEvents="none" 
-          center
-          style={{ transform: "translate(-50%, -20%)" }} // Offset above the pin
+          style={{ transform: `translate(-50%, ${image?-20:-280}%)` }} // Offset above the pin
           className="pointer-events-none"
         >
-          <div className=" text-white  rounded-xl text-xs pointer-events-none select-none w-50 md:w-75 h-auto image-wrapper">
+          <div className="text-adventure-yellow font-f37stout  rounded-xl text-md pointer-events-none select-none w-50 md:w-120 h-auto image-wrapper">
            {image ? <img src={image} className="rounded mb-2 w-full h-full bg-cover" /> : undefined}
-            <h3>{title}</h3>
+            {title && !image?<h3>{title}</h3>:undefined}
           </div>
         </Html>
       )}

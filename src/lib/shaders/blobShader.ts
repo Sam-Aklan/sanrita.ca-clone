@@ -27,7 +27,7 @@ uniform float uBlobSize;
 uniform sampler2D uHeightMap;
 uniform float uAspect;
 uniform float uPinHover;
-
+uniform float uIsMobile;
 varying vec2 vUv;
 
 // Simplex 2D noise
@@ -72,8 +72,8 @@ vec3 blobShape(vec2 uv)
 {
     // 1. Height map integration & distortion
     float h = texture2D(uHeightMap, uv).r;
-    h = smoothstep(0.03, 0.45, h);
-    h = pow(h, 1.6);
+    h = smoothstep(0.03, 0.2, h);
+    h = pow(h, .8);
     
     float noise1 = snoise(uv * 15.0 + uTime * 2.0);
     float noise2 = snoise(uv * 15.0 - uTime * 2.0 + 100.0);
@@ -83,8 +83,8 @@ vec3 blobShape(vec2 uv)
     vec2 gridCoords = uv + distortion;
     gridCoords.x *= uAspect;
 
-    vec2 distToLine = abs(fract(gridCoords * 30.0 + 0.5) - 0.5);
-    vec2 pixelStep = (30.0 / uResolution) * vec2(uAspect, 1.0);
+    vec2 distToLine = abs(fract(gridCoords * mix(30.0 + 0.5,60. + 0.5,uIsMobile)) - 0.5);
+    vec2 pixelStep = (mix(30.0,60.0,uIsMobile) / uResolution) * vec2(uAspect, 1.0);
     vec2 distInPixelsGrid = distToLine / pixelStep;
 
     float uGridLineWidth = .1;     // Solid line width in pixels (decrease for thinner lines)
@@ -137,8 +137,8 @@ vec3 blobShape(vec2 uv)
     // Create neon border (thin and sharp, width in pixels)
     // ADJUST BORDER WIDTH HERE:
     // - borderWidthInPixels: Thickness of the sharp border in pixels (e.g. 1.0 to 3.0)
-    float borderWidthInPixels = 1.0;
-    float halfWidth = borderWidthInPixels * 0.5;
+    float borderWidthInPixels = mix(1.0,.01,uIsMobile);
+    float halfWidth = mix(borderWidthInPixels * 0.05,borderWidthInPixels * .01, uIsMobile);
     // Use feather = 1.5 or larger for high-quality anti-aliasing to keep the border smooth and continuous when upscaled
     float feather = 1.5; 
     float border = smoothstep(halfWidth + feather, halfWidth - feather, abs(distInPixels));
@@ -149,8 +149,16 @@ vec3 blobShape(vec2 uv)
     // ADJUST GLOW HERE:
     // - uPinHover: smoothly controls the transition when hovering over a pin.
     // The glow width and intensity expand equally on both sides (inward and outward) of the border.
-    float glowWidth = mix(10.0, 12.0, uPinHover);
-    float glowIntensity = mix(0.6, 1.3, uPinHover * clamp(sin(uTime *3.),0.,1.));
+    float glowWidth = 0.;
+    float glowIntensity = 0.;
+    if(uIsMobile > 0.){
+     glowWidth = mix(6.0, 8.0, uPinHover);
+     glowIntensity = mix(0.6, 1.3, uPinHover * clamp(sin(uTime *3.),0.,1.));
+    }else{
+        glowWidth = mix(10.0, 12.0, uPinHover);
+     glowIntensity = mix(0.6, 1.3, uPinHover * clamp(sin(uTime *3.),0.,1.));
+    }
+     
     
     float borderGlow = exp(-abs(distInPixels) / glowWidth) * glowIntensity;
 

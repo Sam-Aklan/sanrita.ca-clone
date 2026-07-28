@@ -17,7 +17,7 @@ const CloudsSimulation = ({ width, height, resolutionRef,scrollProgressRef }: Cl
        uTime: { value: 0 },
   uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
   uWindDirection: { value: new THREE.Vector2(Math.cos(0.8), Math.sin(0.8)) },
-  uWindSpeed: { value: 0.02 },
+  uWindSpeed: { value: 0.08 },
   uCloudScale: { value: 15},
   uCloudOpacity: { value: 1.},
   uCloudCutoff: { value: 0.3 },
