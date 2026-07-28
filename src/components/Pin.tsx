@@ -63,7 +63,7 @@ function Pin({ position, title, image, color,IconNode,SpotNode, onHoverChange }:
   })
  
   useFrame(({camera})=>{
-    if(!spotWrapperRef.current && iconWrapperRef.current) return
+    if (!spotWrapperRef.current || !iconWrapperRef.current) return
     const scale = (7 / camera.position.z) * .5 * hoverScaleRef.current.value;
     // console.log("scale",scale)
     spotWrapperRef.current.style.transform = `scale(${scale})`
