@@ -19,7 +19,8 @@ const App = () => {
 
   return (
     <ReactLenis root ref={lenisRef} options={{ autoRaf: false }}>
-      <HomePage />
+      <loader/>
+      {/* <HomePage /> */}
     </ReactLenis>
   );
 };
