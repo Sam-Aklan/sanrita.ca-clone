@@ -6,13 +6,14 @@ import GridLines from '../map-section/GridLines'
 import useHomePage from '../../lib/hook/HomePage/useHomePage'
 import { Canvas } from '@react-three/fiber'
 import Scene from '../Scene'
-import { SpotIcon1, SpotIcon2, SpotIcon3 } from '../icons/Spots'
-import SpiderIcon from '../icons/SpiderIcon'
+import { Suspense } from 'react'
+import Loader from '../Loader'
 
 const HomePage = () => {
     const {paragraphElementRef, planeRef,scrollProgress,isDesktop}= useHomePage()
   return (
     <div className=" text-white/95 w-full h-full text-2xl font-bold text-center overflow-hidden home-wrapper relative">
+        <Loader />
         {/* main content */}
         <div className="home-container relative">
           <HomePageWrapper>
@@ -27,7 +28,9 @@ const HomePage = () => {
         camera={{position:[0,0,0]}}
         style={{ touchAction: 'none' }}
 		>
+      <Suspense fallback={null}>
 			<Scene mapPlaneRef={planeRef} scrollProgress={scrollProgress}/>
+      </Suspense>
 		</Canvas>
 			</div>
 			</div>
