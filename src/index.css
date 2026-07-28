@@ -7,30 +7,20 @@ body{
 #root{
     @apply w-full h-screen min-h-screen
 }
-.image-container > .image-wrapper >img{
-  /* -webkit-mask-image: 
-        linear-gradient(to right, black 55%, transparent 98%),
-        linear-gradient(to left, black 55%, transparent 98%);
-      mask-image: 
-        linear-gradient(to right, black 55%, transparent 98%),
-        linear-gradient(to left, black 55%, transparent 98%); */
-        -webkit-mask-image: 
-    linear-gradient(to right, black 66%, transparent 98%), /* Fades Right */
-    linear-gradient(to left, black 66%, transparent 98%),  /* Fades Left */
-    linear-gradient(to bottom, black 66%, transparent 98%),/* Fades Bottom */
-    linear-gradient(to top, black 66%, transparent 98%);   /* Fades Top */
+.image-wrapper > img{
+    -webkit-mask-image: 
+    linear-gradient(to right, black 70%, transparent 98%), /* Fades Right */
+    linear-gradient(to left, black 70%, transparent 98%),  /* Fades Left */
+    linear-gradient(to bottom, black 70%, transparent 98%),/* Fades Bottom */
+    linear-gradient(to top, black 70%, transparent 98%);   /* Fades Top */
   
   mask-image: 
-    linear-gradient(to right, black 66%, transparent 98%),
-    linear-gradient(to left, black 66%, transparent 98%),
-    linear-gradient(to bottom, black 66%, transparent 98%),
-    linear-gradient(to top, black 66%, transparent 98%);
+    linear-gradient(to right, black 70%, transparent 98%),
+    linear-gradient(to left, black 70%, transparent 98%),
+    linear-gradient(to bottom, black 70%, transparent 98%),
+    linear-gradient(to top, black 70%, transparent 98%);
 
-  /* Intersect forces the image to ONLY exist where all 4 masks overlap */
-  -webkit-mask-composite: source-in; 
-  mask-composite: intersect;
-   /* -webkit-mask-image: radial-gradient(circle, black 30%, transparent 70%);
-  mask-image: radial-gradient(circle, black 30%, transparent 70%); */
-  mask-composite: intersect;
- 
+      -webkit-mask-composite: source-in; /* Safari support */
+      mask-composite: intersect;        /* Modern browsers: only show where both masks overlap */
+     
 }

@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react"
 
 type PinType ={
     position:[number,number,number],
-    title:string,
+    title?:string,
     radius:number,
     color?:string,
     image?:string,
@@ -57,12 +57,12 @@ function Pin({ position, title, image, radius, color, onHoverChange }: PinType) 
         <Html 
           pointerEvents="none" 
           center
-          style={{ transform: "translate(-50%, -130%)" }} // Offset above the pin
+          style={{ transform: "translate(-50%, -20%)" }} // Offset above the pin
           className="pointer-events-none"
         >
-          <div className="bg-black text-white p-3 rounded-xl text-xs pointer-events-none select-none">
-           {image ? <img src={image} className="rounded mb-2" /> : undefined}
-            <h3>{title}</h3>
+          <div className=" text-white  rounded-xl text-xs pointer-events-none select-none w-50 md:w-75 h-auto image-wrapper">
+           {image ? <img src={image} className="rounded mb-2 w-full h-full bg-cover" /> : undefined}
+            {/* <h3>{title}</h3> */}
           </div>
         </Html>
       )}
