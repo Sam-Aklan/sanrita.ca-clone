@@ -62,7 +62,7 @@ function Pin({ position, title, image, radius, color, onHoverChange }: PinType) 
         >
           <div className=" text-white  rounded-xl text-xs pointer-events-none select-none w-50 md:w-75 h-auto image-wrapper">
            {image ? <img src={image} className="rounded mb-2 w-full h-full bg-cover" /> : undefined}
-            {/* <h3>{title}</h3> */}
+            <h3>{title}</h3>
           </div>
         </Html>
       )}

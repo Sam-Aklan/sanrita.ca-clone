@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
-import { useCallback, useEffect,useMemo,useRef, useState } from 'react';
+import { useCallback, useEffect,useMemo,useRef, useState, type RefObject } from 'react';
 import {Environment, OrbitControls, PerspectiveCamera, useTexture} from "@react-three/drei";
-import { useThree, type ThreeEvent } from '@react-three/fiber';
+import { useThree, useFrame, type ThreeEvent } from '@react-three/fiber';
 import { fragmentMapShader, vertexMapShader } from '../lib/shaders/heightMapShader';
 import type { PerspectiveCamera as CameraType } from 'three'
 import { Pin } from './Pin';
@@ -27,13 +27,21 @@ const pins: PinData[] = [
   { id: 5, title: 'diving', u: 0.31, v: 0.16, z: -0.002, radius: 0.1, color: 'green', },
 ]
 
-const Scene = () => {
+interface SceneProps{
+  mapPlaneRef:RefObject<THREE.PlaneGeometry | null>
+  scrollProgress: RefObject<{ value: number }>
+}
+
+const Scene = ({mapPlaneRef, scrollProgress}:SceneProps) => {
   const cameraRef = useRef<CameraType>(null)
   const mapRef = useRef<THREE.Group>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
   // hold and drag refs
   const dragging = useRef(false)
 const last = useRef([0,0])
+  const pinsGroupRef = useRef<THREE.Group>(null)
+  const mapScaleGroupRef = useRef<THREE.Group>(null)
+  const resolutionRef = useRef<THREE.Vector2>(new THREE.Vector2(1024, 1024))
 // textures
     const [mountain, heightMap]= useTexture(['./mountain-sea/optimize-image.jpg','./mountain-sea/Mountain By Sea Heightmap.png']);
 // uniforms
@@ -170,7 +178,7 @@ const onPointerDownHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
  dragging.current = true;
  setIsDragging(true);
  last.current = [e.clientX, e.clientY]
-},[])
+},[scrollProgress])
 const onPointerUpHandler = useCallback((_e:ThreeEvent<PointerEvent>)=>{
  dragging.current = false;
  setIsDragging(false);
@@ -181,7 +189,10 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
     setPointerUv(e.uv.clone());
   }
 
-  if(!mapRef.current || ! dragging.current)return
+  const p = scrollProgress.current ? scrollProgress.current.value : 0;
+  if (p < 1) return;
+
+  if(!mapRef.current || !dragging.current)return
 
   const dx = e.clientX - last.current[0]
   const dy = e.clientY - last.current[1]
@@ -189,35 +200,74 @@ const onPointerMoveHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
   last.current = [e.clientX, e.clientY]
 if(isDragging){
 
-  mapRef.current.position.x += dx * 0.006
-  mapRef.current.position.y -= dy * 0.006
+  mapRef.current.position.x += dx * 0.01
+  mapRef.current.position.y -= dy * 0.01
 }
 mapRef.current.position.x += dx * 0.003
   mapRef.current.position.y -= dy * 0.003
 
-  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x, initialX - 1.0, initialX + 0.6)
-  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y, -1.0, 1.0)
+  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x, -10.0, 10)
+  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y, -5.0, 5.0)
 
-},[isDragging, initialX])
+},[isDragging, scrollProgress])
 
-console.log("scalex",planeHeightUnits, "scaley",planeWidthUnits)
+  useFrame(() => {
+    const p = scrollProgress.current ? scrollProgress.current.value : 0;
+    
+    const isRotated = mapRef.current ? Math.abs(mapRef.current.rotation.z - Math.PI/2) < 0.1 : false;
+    const targetScaleX = isRotated ? (viewport.height / planeHeightUnits) : (viewport.width / planeHeightUnits);
+    const targetScaleY = isRotated ? (viewport.width / planeWidthUnits) : (viewport.height / planeWidthUnits);
+
+    const currentScaleX = THREE.MathUtils.lerp(1, targetScaleX, p);
+    const currentScaleY = THREE.MathUtils.lerp(1, targetScaleY, p);
+
+    if (mapScaleGroupRef.current) {
+      mapScaleGroupRef.current.scale.set(currentScaleX, currentScaleY, 1);
+    }
+
+    if (mapRef.current) {
+      if (p < 1) {
+        mapRef.current.position.x = THREE.MathUtils.lerp(initialX, 0, p);
+        mapRef.current.position.y = 0;
+      }
+    }
+
+    const currentWidthPx = targetHeightPx * currentScaleX;
+    const currentHeightPx = targetWidthPx * currentScaleY;
+    resolutionRef.current.set(currentWidthPx, currentHeightPx);
+
+    if (pinsGroupRef.current) {
+      pinsGroupRef.current.children.forEach((pinGroup, index) => {
+        const pinData = pins[index];
+        if (pinGroup instanceof THREE.Group && pinData) {
+          pinGroup.position.x = (pinData.u - 0.5) * planeHeightUnits * currentScaleX;
+          pinGroup.position.y = (pinData.v - 0.5) * planeWidthUnits * currentScaleY;
+        }
+      });
+    }
+   
+    const pMapper = THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(p, .9, 1., 0, 1.), 0, 1)
+    if (cameraRef.current) {
+      cameraRef.current.position.z = THREE.MathUtils.lerp(10, 7, pMapper)
+    }
+  });
 
   return (
     <>
     <Environment files={"./city-lightings.hdr"}/>
-      <OrbitControls
+      {/* <OrbitControls
       // enabled={false}
       // enableZoom
      onChange={()=>{
 
        if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
      }}
-      /> 
+      />  */}
      <PerspectiveCamera
         makeDefault
         near={0.1}
         far={10000}
-        position={[0,0.,30]}
+        position={[0,0.,10]}
         aspect={size.width / size.height}
         fov={75}
         ref={cameraRef}
@@ -231,56 +281,56 @@ console.log("scalex",planeHeightUnits, "scaley",planeWidthUnits)
           mapMaterialRef={materialRef} 
           mapRef={mapRef}
           dimensions={dimensions}
-          widthPx={targetHeightPx}
-          heightPx={targetWidthPx}
+          resolutionRef={resolutionRef}
         />
       )}
     <group position={[initialX,0.,-0.3]} ref={mapRef} 
     // rotation={[0,0,Math.PI/2]} 
     >
-     <axesHelper args={[10]}/>
-       <mesh 
-     scale={[planeHeightUnits, planeWidthUnits, 1]}
-     renderOrder={100} 
-     onPointerDown={onPointerDownHandler}
-     onPointerUp={onPointerUpHandler}
-     onPointerMove={onPointerMoveHandler}   
-     onPointerOver={() => setIsHovered(true)}
-     onPointerOut={() => setIsHovered(false)}
-     >
-        <planeGeometry args={[1, 1, 100, 100]} />
-        <shaderMaterial
-          ref={materialRef}
-          vertexShader={vertexMapShader}
-         
-          fragmentShader={fragmentMapShader}
-          uniforms={sharedUniforms}
-          needsUpdate={true}
-          
+      <axesHelper args={[10]}/>
+      <group ref={mapScaleGroupRef} name="mapScaleGroup">
+        <mesh 
+          renderOrder={100} 
+          onPointerDown={onPointerDownHandler}
+          onPointerUp={onPointerUpHandler}
+          onPointerMove={onPointerMoveHandler}   
+          onPointerOver={() => setIsHovered(true)}
+          onPointerOut={() => setIsHovered(false)}
+        >
+          <planeGeometry args={[planeHeightUnits, planeWidthUnits,100 , 100]} ref={mapPlaneRef} />
+          <shaderMaterial
+            ref={materialRef}
+            vertexShader={vertexMapShader}
+            fragmentShader={fragmentMapShader}
+            uniforms={sharedUniforms}
+            needsUpdate={true}
+          />
+        </mesh>
+        <CloudsSimulation
+          width={planeHeightUnits}
+          height={planeWidthUnits}
+          resolutionRef={resolutionRef}
+          scrollProgressRef={scrollProgress}
         />
-       
-      </mesh>
+      </group>
 
-       {pins.map((pin) => (
-            <Pin
-              key={pin.id}
-              title={pin.title}
-              image={pin.image}
-              radius={pin.radius ?? 0.03}
-              color={pin.color ?? 'white'}
-              position={toPlanePos(
-                pin.u,
-                pin.v,
-                pin.z ?? 0.05
-              ) as [number,number,number]}
-              onHoverChange={(hovered) => handlePinHover(pin.id, hovered)}
-            />
-          ))}
-       <CloudsSimulation
-         scale={[planeHeightUnits, planeWidthUnits, 1]}
-         widthPx={targetHeightPx}
-         heightPx={targetWidthPx}
-       />
+      <group ref={pinsGroupRef}>
+        {pins.map((pin) => (
+          <Pin
+            key={pin.id}
+            title={pin.title}
+            image={pin.image}
+            radius={pin.radius ?? 0.03}
+            color={pin.color ?? 'white'}
+            position={toPlanePos(
+              pin.u,
+              pin.v,
+              pin.z ?? 0.05
+            ) as [number,number,number]}
+            onHoverChange={(hovered) => handlePinHover(pin.id, hovered)}
+          />
+        ))}
+      </group>
     </group>
     
     </>
