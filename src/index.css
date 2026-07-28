@@ -3,6 +3,15 @@
 body {
   @apply w-screen max-w-360 h-screen min-h-screen mx-auto;
 }
+
+@font-face {
+  font-family: "mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/centramono-book-webfont.woff2") format("woff2");
+}
+
 @font-face {
   font-family: "F37stout";
   font-style: normal;
@@ -11,6 +20,7 @@ body {
   src: url("/fonts/F37stout-black-compressed-webfont.woff2") format("woff2");
 }
 :root {
+  --terrain-grey:#84907f;
   --scroll-aside-padding-40: 40px;
   --scroll-aside-padding-55: 55px;
   --scroll-aside-width: 350px;
@@ -19,6 +29,8 @@ body {
   --scroll-aside-title: -10px;
   --scroll-aside-title-translate-x: 0px;
   --scroll-aside-title-translate-y: 0px;
+  --scroll-wrapper-opacity:100%;
+  --scroll-gridlines-opacity: 100%;
 }
 
 @theme {
@@ -26,16 +38,22 @@ body {
   --color-icy-blue: #dde2e4;
   --color-adventure-yellow: #e2ffcc;
   --color-forest-green: #2d3329;
+  --color-terrain-grey:var(--terrain-grey);
   /* texts */
   --text-eyebrow: 0.625rem;
   /* breaking-points */
   --breakpoint-mobile: 799.98px;
   /* fonts */
   --font-f37stout:"F37stout", sans-serif, serif , monospace;
+  --font-mono:"mono",monospace;
 }
 
 #root {
   @apply w-full h-screen min-h-screen;
+}
+
+.font-mono{
+  font-family: var(--font-mono);
 }
 
 .text-h1-like {
@@ -53,6 +71,9 @@ body {
     calc((var(--text-min) * 100vw) / var(--breakpoint-mobile)),
     var(--text-max)
   );
+}
+.fill-terrain-grey {
+    fill: var(--color-terrain-grey);
 }
 .image-wrapper > img {
   -webkit-mask-image:
@@ -77,6 +98,7 @@ body {
   }
 
   .page-home-module__mOmtjG__c-home_grid-content {
+  --scroll-wrapper-padding: 40px;
     --grid-content-cols: var(--scroll-wrapper-padding) 1fr
       calc(55px - (55px * var(--scroll-normalized, 0)));
     --grid-content-rows: var(--scroll-wrapper-padding) 1fr

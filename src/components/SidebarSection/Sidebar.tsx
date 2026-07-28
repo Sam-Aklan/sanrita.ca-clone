@@ -29,7 +29,7 @@ const tabs = [
 function Sidebar() {
   const [activeTab, setActiveTab] = useState("map")
   return (
-    <div className='c-icons || w-full h-full flex-1 flex flex-col justify-center gap-0 [&>a]:pointer-events-auto [&>a]:flex *:py-[6px] *:font-mono max-mobile:*:py-10 col-2 row-3 -translate-x-(--scroll-aside) relative '>
+    <div className='c-icons || w-full h-full flex-1 flex flex-col justify-center gap-0 [&>a]:pointer-events-auto [&>a]:flex *:py-[6px] *:font-mono font-thin max-mobile:*:py-10 col-2 row-3 -translate-x-(--scroll-aside) relative '>
       {tabs.map((icon,)=> <SidbarTab 
       key={icon.key} 
       keyLabel={icon.key} 
