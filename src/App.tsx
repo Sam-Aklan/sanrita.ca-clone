@@ -1,5 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import Scene from './components/Scene'
+import HomePageWrapper from "./components/HomePageWrapper";
 
 const App = () => {
 	return (
@@ -12,12 +13,10 @@ const App = () => {
 		>
 			<Scene/>
 		</Canvas> */}
-		<div className="w-full h-full image-container flex justify-center items-center">
-			<div className="w-100 md:w-75 h-auto image-wrapper">
-				<img src="./man-wild.jpg" alt="" className="w-full h-full" />
-			</div>
-
-		</div>
+		{/* main content */}
+		<HomePageWrapper>
+			
+		</HomePageWrapper>
 			
 		</div>
 	);
