@@ -20,11 +20,11 @@ type PinData = {
   image?:string
 }
 const pins: PinData[] = [
-  { id: 1, title: 'port', u: 0.588, v: 0.46, z: 0.18, radius: 0.07, color: 'blue' },
-  { id: 2, title: 'harbour', u: 0.14, v: 0.39, z: 0.10, radius: 0.07, color: 'cyan', image:"./pics/fisher.jpg" },
-  { id: 3, title: 'city', u: 0.7, v: 0.73, z: 0.35, radius: 0.07, color: 'pink', image:"./pics/hut.jpg" },
-  { id: 4, title: 'mountain', u: 0.54, v: 0.245, z: 0.05, radius: 0.07, color: 'red', image:"./pics/viliage.jpg" },
-  { id: 5, title: 'diving', u: 0.31, v: 0.16, z: -0.002, radius: 0.07, color: 'green', },
+  { id: 1, title: 'port', u: 0.588, v: 0.46, z: .25, radius: 0.1, color: 'blue' },
+  { id: 2, title: 'harbour', u: 0.14, v: 0.39, z: 0.10, radius: 0.1, color: 'cyan', image:"./pics/fisher.jpg" },
+  { id: 3, title: 'city', u: 0.7, v: 0.73, z: 0.35, radius: 0.1, color: 'pink', image:"./pics/hut.jpg" },
+  { id: 4, title: 'mountain', u: 0.54, v: 0.245, z: 0.05, radius: 0.1, color: 'red', image:"./pics/viliage.jpg" },
+  { id: 5, title: 'diving', u: 0.31, v: 0.16, z: -0.002, radius: 0.1, color: 'green', },
 ]
 
 const Scene = () => {
@@ -43,12 +43,12 @@ const last = useRef([0,0])
   uBlobTexture: { value: null }, // Added for blob simulation
 
   uTexelSize: { value: new THREE.Vector2() },
-  uHeightScale: { value: 2.},
-    uStrength: {value:.2},
+  uHeightScale: { value: 4.},
+    uStrength: {value:3.},
   uLightDir: { value: new THREE.Vector3(1,1,1).normalize() }
    }).current;
 
-    const {size}= useThree()
+    const {size,}= useThree()
     const [pointerUv, setPointerUv] = useState(new THREE.Vector2(-1, -1));
     const [isHovered, setIsHovered] = useState(false);
     const [hoveredPins, setHoveredPins] = useState<Set<number>>(new Set());
@@ -95,36 +95,76 @@ const last = useRef([0,0])
       
 
     },[heightMap,mountain])
-// calculate width and height so the panel fits the entire screen
-    const dimensions = useMemo(()=>{
-      if(!cameraRef.current) return  {}
-      const camera = cameraRef.current
-      const distance = Math.abs(camera.position.z - 0.) // plane z position
+    // viewport size in Three.js coordinates
+    const viewport = useMemo(() => {
+      if (!cameraRef.current) return { width: 0, height: 0 };
+      const camera = cameraRef.current;
+      const distance = Math.abs(camera.position.z - 0.0);
+      const fov = THREE.MathUtils.degToRad(camera.fov);
+      const height = 2 * Math.tan(fov / 2) * distance;
+      const width = height * camera.aspect;
+      return { width, height };
+    }, [size, cameraRef.current]);
 
-    const fov = THREE.MathUtils.degToRad(camera.fov)
+    const pixelToUnit = useMemo(() => {
+      if (!viewport.height) return 0;
+      return viewport.height / size.height;
+    }, [viewport, size]);
 
-    const height = 2 * Math.tan(fov / 2) * distance
-    const width = height * camera.aspect
+   const [sidebarWidth,targetWidthPx,targetHeightPx] = useMemo(()=>{
+ const isDesktop = size.width >= 800;
+    const sidebarWidth = isDesktop ? 350 : 0;
+    const mapWrapperWidth = size.width - sidebarWidth;
+     // target dimensions of the plane in pixels:
+    // - width fits vertical gridlines (w - 55 * 2) minus 40px padding = mapWrapperWidth - 150
+    // - height fits horizontal gridlines (h - 40) minus 40px padding = size.height - 80
+    const targetWidthPx = size.height - 80;
+    const targetHeightPx = mapWrapperWidth - 150;
+        return [sidebarWidth,targetWidthPx,targetHeightPx]
+    },[size.width])
+   
+   
 
+    // convert to Three.js units:
+    const planeWidthUnits = useMemo(() => {
+      if (targetWidthPx <= 0 || pixelToUnit <= 0) return 1;
+      return targetWidthPx * pixelToUnit;
+    }, [targetWidthPx, pixelToUnit]);
 
-    return { width, height }
-    },[size,cameraRef.current])
+    const planeHeightUnits = useMemo(() => {
+      if (targetHeightPx <= 0 || pixelToUnit <= 0) return 1;
+      return targetHeightPx * pixelToUnit;
+    }, [targetHeightPx, pixelToUnit]);
 
-  //  const roundUp = useCallback((num:number)=> Math.ceil(num * 1000)/1000,[])
+    // Center of MapWrapper is offset to the right by sidebarWidth / 2.
+    // Center of gridlines aligns with center of MapWrapper.
+    // Translate this offset to Three.js units.
+    const initialX = useMemo(() => {
+      return (sidebarWidth / 2) * pixelToUnit;
+    }, [sidebarWidth, pixelToUnit]);
+
+    // Pass dimensions of local plane geometry to BlobSimulation and toPlanePos.
+    // Since the plane is rotated by Math.PI/2 around Z:
+    // - Local X size of the mesh is planeHeightUnits (maps to screen height)
+    // - Local Y size of the mesh is planeWidthUnits (maps to screen width)
+    const dimensions = useMemo(() => {
+      return {
+        width: planeHeightUnits,
+        height: planeWidthUnits,
+      };
+    }, [planeHeightUnits, planeWidthUnits]);
 
    const toPlanePos = useCallback(( u:number,
   v:number,
   z:number=0.05
   )=>{
       
-  // const x = roundUp((u / dimensions.width) + 0.5);
-  // const y = roundUp((v / dimensions.height) + .5);
-   const x = (u - 0.5) * (dimensions.width ?? 0);
-   const y = (v - 0.5) * (dimensions.height ?? 0);
+   const x = (u - 0.5) * planeHeightUnits;
+   const y = (v - 0.5) * planeWidthUnits;
 
   return [x, y,z]
 
-    },[dimensions])
+    },[planeHeightUnits, planeWidthUnits])
 
 const onPointerDownHandler = useCallback((e:ThreeEvent<PointerEvent>)=>{
  dragging.current = true;
@@ -155,17 +195,20 @@ if(isDragging){
 mapRef.current.position.x += dx * 0.003
   mapRef.current.position.y -= dy * 0.003
 
-  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x,-1.,.6)
-  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y,-1.,1.)
+  mapRef.current.position.x = THREE.MathUtils.clamp(mapRef.current.position.x, initialX - 1.0, initialX + 0.6)
+  mapRef.current.position.y = THREE.MathUtils.clamp(mapRef.current.position.y, -1.0, 1.0)
 
-},[isDragging])
+},[isDragging, initialX])
 
+console.log("scalex",planeHeightUnits, "scaley",planeWidthUnits)
 
   return (
     <>
     <Environment files={"./city-lightings.hdr"}/>
       <OrbitControls
-     onChange={(e)=>{
+      // enabled={false}
+      // enableZoom
+     onChange={()=>{
 
        if(cameraRef.current) console.log("camera postion", cameraRef.current.position.z)
      }}
@@ -174,7 +217,7 @@ mapRef.current.position.x += dx * 0.003
         makeDefault
         near={0.1}
         far={10000}
-        position={[0,0.,1.2]}
+        position={[0,0.,30]}
         aspect={size.width / size.height}
         fov={75}
         ref={cameraRef}
@@ -186,16 +229,18 @@ mapRef.current.position.x += dx * 0.003
           isHovered={isHovered}
           isOverPin={isOverPin || isDragging}
           mapMaterialRef={materialRef} 
-          aspect={size.width / size.height}
           mapRef={mapRef}
           dimensions={dimensions}
+          widthPx={targetHeightPx}
+          heightPx={targetWidthPx}
         />
       )}
-    <group position={[0,0.,-0.3]} scale={1} ref={mapRef} 
-    // rotation={[-Math.PI/15,0,0]}
+    <group position={[initialX,0.,-0.3]} ref={mapRef} 
+    // rotation={[0,0,Math.PI/2]} 
     >
      <axesHelper args={[10]}/>
        <mesh 
+     scale={[planeHeightUnits, planeWidthUnits, 1]}
      renderOrder={100} 
      onPointerDown={onPointerDownHandler}
      onPointerUp={onPointerUpHandler}
@@ -203,7 +248,7 @@ mapRef.current.position.x += dx * 0.003
      onPointerOver={() => setIsHovered(true)}
      onPointerOut={() => setIsHovered(false)}
      >
-        <planeGeometry args={[dimensions?.width, dimensions?.height,100 , 100]} />
+        <planeGeometry args={[1, 1, 100, 100]} />
         <shaderMaterial
           ref={materialRef}
           vertexShader={vertexMapShader}
@@ -231,9 +276,12 @@ mapRef.current.position.x += dx * 0.003
               onHoverChange={(hovered) => handlePinHover(pin.id, hovered)}
             />
           ))}
-       
+       <CloudsSimulation
+         scale={[planeHeightUnits, planeWidthUnits, 1]}
+         widthPx={targetHeightPx}
+         heightPx={targetWidthPx}
+       />
     </group>
-    <CloudsSimulation/>
     
     </>
   )

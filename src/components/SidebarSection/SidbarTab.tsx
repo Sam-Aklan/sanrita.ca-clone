@@ -7,7 +7,6 @@ const SidbarTab = ({keyLabel,isLink=false,isActive,IconNode,setActive}:{
   isActive:boolean,
   setActive: Dispatch<SetStateAction<string>>,
   isLink?:boolean}) => {
-    console.log(keyLabel,isActive)
   if(isLink){
     return(
       <a href="#"  onClick={()=>setActive(keyLabel)}>

@@ -1,39 +1,44 @@
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { useFBO } from '@react-three/drei';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { fragmentBlobShader, vertexBlobShader } from '../lib/shaders/blobShader';
 
 type BlobSimulationProps = {
   resolution?: number;
+  widthPx?: number;
+  heightPx?: number;
   heightMap: THREE.Texture;
   pointerUv: THREE.Vector2;
   isHovered: boolean;
   isOverPin: boolean;
   mapMaterialRef: React.RefObject<THREE.ShaderMaterial | null>;
-  aspect?: number;
   mapRef: React.RefObject<THREE.Group | null>;
   dimensions: { width?: number; height?: number };
 };
 
 export const BlobSimulation = ({
   resolution = 1024,
+  widthPx,
+  heightPx,
   heightMap,
   pointerUv,
   isHovered,
   isOverPin,
   mapMaterialRef,
-  aspect = 1.0,
   mapRef,
   dimensions,
 }: BlobSimulationProps) => {
-  const fbo1 = useFBO(resolution, resolution, {
+  const wPx = Math.round(widthPx ?? resolution);
+  const hPx = Math.round(heightPx ?? resolution);
+
+  const fbo1 = useFBO(wPx, hPx, {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
     type: THREE.HalfFloatType,
   });
 
-  const fbo2 = useFBO(resolution, resolution, {
+  const fbo2 = useFBO(wPx, hPx, {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
     type: THREE.HalfFloatType,
@@ -45,7 +50,7 @@ export const BlobSimulation = ({
   const camera = useMemo(() => new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1), []);
 
   const uniforms = useRef({
-    uResolution: { value: new THREE.Vector2(resolution, resolution) },
+    uResolution: { value: new THREE.Vector2(wPx, hPx) },
     uMouse: { value: new THREE.Vector2(-1, -1) },
     uPrevMouse: { value: new THREE.Vector2(-1, -1) },
     uMouseVelocity: { value: new THREE.Vector2(0, 0) },
@@ -55,7 +60,7 @@ export const BlobSimulation = ({
     uBlobSize: { value: 0.03 },
     uPrevTrail: { value: fbo1.texture },
     uHeightMap: { value: heightMap },
-    uAspect: { value: 1.0 },
+    uAspect: { value: wPx / hPx },
     uPinHover: { value: 0.0 },
   });
 
@@ -71,12 +76,35 @@ export const BlobSimulation = ({
     []
   );
 
-  const mesh = useMemo(
-    () => new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material),
-    [material]
-  );
+  const mesh = useMemo(() => {
+    return new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
+  }, [material]);
 
-  useMemo(() => scene.add(mesh), [scene, mesh]);
+  useEffect(() => {
+    scene.add(mesh);
+    return () => {
+      scene.remove(mesh);
+      mesh.geometry.dispose();
+    };
+  }, [scene, mesh]);
+
+  useEffect(() => {
+    const w = dimensions.width ?? 2;
+    const h = dimensions.height ?? 2;
+    mesh.scale.set(w, h, 1);
+  }, [mesh, dimensions.width, dimensions.height]);
+
+  useEffect(() => {
+    const w = dimensions.width ?? 2;
+    const h = dimensions.height ?? 2;
+    const halfW = w / 2;
+    const halfH = h / 2;
+    camera.left = -halfW;
+    camera.right = halfW;
+    camera.top = halfH;
+    camera.bottom = -halfH;
+    camera.updateProjectionMatrix();
+  }, [camera, dimensions.width, dimensions.height]);
 
   // Update heightMap uniform if it changes
   useMemo(() => {
@@ -86,7 +114,8 @@ export const BlobSimulation = ({
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     uniforms.current.uTime.value = time;
-    uniforms.current.uAspect.value = aspect;
+    uniforms.current.uResolution.value.set(wPx, hPx);
+    uniforms.current.uAspect.value = wPx / hPx;
 
     // Smoothly interpolate the pin hover state (0.0 to 1.0)
     const targetPinHover = isOverPin ? 1.0 : 0.0;

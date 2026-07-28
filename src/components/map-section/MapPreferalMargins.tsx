@@ -49,7 +49,7 @@ const MapPreferalMargins = () => {
 
               
             </div>
-              <div className="relative z-10 col-1 row-1 w-full h-full touch-none pointer-events-auto"/>
+              <div className="relative z-10 col-1 row-1 w-full h-full touch-none pointer-events-none"/>
         </div>
     </article>
   )
