@@ -124,9 +124,8 @@ vec3 blobShape(vec2 uv)
 
     float threshold = mix(1.25, 0.7, clamp(speed * 2.0, 0.0, 1.0));
 
-    // Convert gradient to original UV space for isotropic distance estimation
-    vec2 uvGrad = vec2(totalGrad.x * uAspect, totalGrad.y);
-    float gradLen = max(length(uvGrad), 0.1); // Capped to avoid division by zero/overflow
+    // Use the aspect-corrected gradient directly for isotropic distance estimation in physical pixels.
+    float gradLen = max(length(totalGrad), 0.1); // Capped to avoid division by zero/overflow
     float distInPixels = (totalR - threshold) / gradLen * uResolution.y;
 
     // Smoothly transition to the exact geometric distance inside the metaball core
@@ -163,29 +162,29 @@ void main()
     vec2 frag = gl_FragCoord.xy;
 
     vec4 prev = texture2D(uPrevTrail, vUv);
-    float pigment = prev.r;
-    float wetness = prev.g;
-    float borderPigment = prev.b;
+    vec3 prevColor = prev.rgb;
+    float wetness = prev.a;
 
     // ===== GLOW DECAY (Neon effect) =====
     float dryingRate = 0.015; // Faster decay for glowing trail
-    wetness = max(prev.g - dryingRate, 0.0);
-    pigment *= 0.92; // Fade out pigment
-    borderPigment *= 0.92; // Fade out border pigment
+    wetness = max(wetness - dryingRate, 0.0);
+    prevColor *= 0.92; // Fade out color
 
     // ===== MOTION =====
     vec2 mousePx = uMouse * uResolution;
-vec2 prevMousePx = uPrevMouse * uResolution;
+    vec2 prevMousePx = uPrevMouse * uResolution;
 
-vec2 motion = mousePx - prevMousePx;
+    vec2 motion = mousePx - prevMousePx;
 
     float speed = length(motion);
 
-    // ===== IDLE DISSOLVE (from blob shader) =====
+    // ===== IDLE DISSOLVE =====
 
     float dissolveSpeed = length(uMouseVelocity);
     float motionFade = smoothstep(0.002, 0.0002, dissolveSpeed);
-float activeFactor = 1.0 - motionFade;
+    float activeFactor = 1.0 - motionFade;
+
+    vec3 strokeColor = vec3(0.0);
 
     // Only paint when blob exists (CRITICAL)
     if (uMousePressure > 0.01 || activeFactor > 0.05)
@@ -213,11 +212,11 @@ float activeFactor = 1.0 - motionFade;
 
         float strokeGlow = max(max(glowPart, gridPart), bloom);
 
-        // Deposit glow pigment (Red channel)
-        pigment = max(pigment, strokeGlow);
+        // ===== BLOB COLOR CONFIGURATION =====
+        vec3 neonGlowColor = vec3(0.8031, 0.9227, 0.5389);
+        vec3 neonBorderColor = vec3(0.9015, 0.9613, 0.7694);
 
-        // Deposit border pigment (Blue channel)
-        borderPigment = max(borderPigment, borderPart);
+        strokeColor = neonGlowColor * strokeGlow * 1.8 + neonBorderColor * borderPart * 4.0;
 
         // Deposit wetness (fluid behavior based on overall shape)
         float strokeOverall = max(borderPart, glowPart);
@@ -225,25 +224,25 @@ float activeFactor = 1.0 - motionFade;
         wetness = max(wetness, wetDeposit);
     }
 
-    // ===== CAPILLARY SPREAD (unchanged watercolor physics) =====
+    vec3 color = max(prevColor, strokeColor);
+
+    // ===== CAPILLARY SPREAD (watercolor physics) =====
     if (wetness > 0.2)
     {
         vec2 px = 1.0 / uResolution;
 
-        float spread =
-            texture2D(uPrevTrail, vUv + vec2(px.x,0)).r +
-            texture2D(uPrevTrail, vUv - vec2(px.x,0)).r +
-            texture2D(uPrevTrail, vUv + vec2(0,px.y)).r +
-            texture2D(uPrevTrail, vUv - vec2(0,px.y)).r;
+        vec3 spread = (
+            texture2D(uPrevTrail, vUv + vec2(px.x,0)).rgb +
+            texture2D(uPrevTrail, vUv - vec2(px.x,0)).rgb +
+            texture2D(uPrevTrail, vUv + vec2(0,px.y)).rgb +
+            texture2D(uPrevTrail, vUv - vec2(0,px.y)).rgb
+        ) * 0.25;
 
-        spread *= 0.25;
-        pigment = mix(pigment, spread, wetness * 0.04);
+        color = mix(color, spread, wetness * 0.04);
     }
 
-    pigment = pow(pigment, 1.05);
-    borderPigment = pow(borderPigment, 1.05);
-
-    gl_FragColor = vec4(pigment, wetness, borderPigment, 1.0);
+    color = pow(color, vec3(1.05));
+    gl_FragColor = vec4(color, wetness);
    
 }
 

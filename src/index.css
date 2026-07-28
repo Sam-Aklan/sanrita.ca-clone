@@ -1,11 +1,10 @@
 @import "tailwindcss";
 
 *{
-  scrollbar-width: thin
+  scrollbar-width: none;
 }
-
 body {
-  @apply w-screen max-w-360 h-screen min-h-screen mx-auto;
+  @apply w-screen max-w-360 h-screen min-h-screen mx-auto ;
 }
 
 @font-face {
@@ -52,8 +51,14 @@ body {
   --font-mono:"mono",monospace;
 }
 
+/* #root > div,
+article,
+section{
+  @apply border-1 border-red-600!
+} */
+
 #root {
-  @apply w-full h-screen min-h-screen;
+  @apply w-full h-screen min-h-screen ;
 }
 
 .font-mono{

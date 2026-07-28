@@ -1,17 +1,19 @@
 import type { Dispatch, JSX, SetStateAction,  } from "react"
 import { cn } from "../../lib/utils"
 
-const SidbarTab = ({keyLabel,isLink=false,isActive,IconNode,setActive}:{
+const SidbarTab = ({keyLabel,isLink=false,isActive,IconNode,setActive,isDropDown=false}:{
   keyLabel:string, 
   IconNode:JSX.Element,
   isActive:boolean,
   setActive: Dispatch<SetStateAction<string>>,
-  isLink?:boolean}) => {
+  isLink?:boolean,
+  isDropDown?:boolean
+}) => {
   if(isLink){
     return(
-      <a href="#"  onClick={()=>setActive(keyLabel)}>
+      <a href="#"  onClick={()=>setActive(keyLabel)} className="sidbar-tab">
         <div className="c-icon || inline-block group uppercase">
-          <div className="relative overflow-hidden before:absolute before:-top-10 before:-left-[200px] before:w-30 before:h-[60px] before:filter-[blur(3px)] before:z-30 before:bg-adventure-yellow before:opacity-70 before:rotate-40  before:transition-none group-hover:before:transition-all before:duration-800 before:ease-out   group-hover:before:left-[calc(100%+20px)] before:bg-icy-blue before:undefined">
+          <div className={cn("relative overflow-hidden  ",isDropDown?undefined:"before:-top-10 before:-left-[200px] before:h-[60px] before:z-30 before:bg-adventure-yellow before:opacity-70 before:rotate-40 before:transition-none group-hover:before:transition-all before:duration-800 before:ease-out   group-hover:before:left-[calc(100%+20px)] before:absolute before:w-30 before:filter-[blur(3px)]  before:bg-icy-blue before:undefined")}>
 
             <div className="flex items-center gap-12">
               <div>
@@ -28,7 +30,7 @@ const SidbarTab = ({keyLabel,isLink=false,isActive,IconNode,setActive}:{
       </a>
     )
   }else{
-    return <div className="c-icon || inline-block group capitalize" onClick={()=>setActive(keyLabel)}>
+    return <div className="sidbar-tab c-icon || inline-block group capitalize" onClick={()=>setActive(keyLabel)}>
       <div className="relative overflow-hidden before:undefined">
         <div className="flex items-center gap-12">
           <div>
