@@ -66,11 +66,11 @@ useGSAP(() => {
           })
 
         },
-        // snap:{
-        //   snapTo:1.,
-        //   delay:.01,
-        //   inertia:false,
-        // }
+        snap:{
+          snapTo:1.,
+          delay:.01,
+          inertia:false,
+        }
         
       },
     });

@@ -28,7 +28,7 @@ const HomePageWrapper = ({children}:{children?:React.ReactNode}) => {
 							<div className="relative z-20 flex w-full">
 
 						<CreativeStudio/>
-						<div className="w-20 h-20 mx-auto my-auto flex items-center justify-center">
+						<div className="w-20 h-20 ml-auto mr-2 my-auto flex items-center justify-center">
 							<CompassComponent/>
 						</div>
 							</div>
