@@ -2,7 +2,6 @@ import type React from "react"
 import { CreativeStudio, Sidebar, Title } from "../SidebarSection"
 import { DropDownBar } from "../DropDownMenu"
 import useWindowSize from "../../lib/hook/useWindowSize"
-import CompassIcon from "../icons/CompassIcon"
 import CompassComponent from "../map-section/CompassComponent"
 
 

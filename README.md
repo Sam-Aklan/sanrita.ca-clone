@@ -1,79 +1,65 @@
-# React + TypeScript + Vite
+# Gamified 3D Map Navigation
 
-fog shader
-https://www.shadertoy.com/view/tdGfRd
+An interactive, gamified 3D navigation bar designed to replace traditional static nav menus with an adventure-map experience. Built with **React Three Fiber**, **GSAP**, and **GLSL Shaders**.
 
-cloud shader 
-https://www.shadertoy.com/view/XsfXW8
+---
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🗺️ Visual Overview
 
-Currently, two official plugins are available:
+| Desktop Map | Mobile Map |
+| :---: | :---: |
+| ![Desktop Map Overview](public/overview/desk-map.png) | ![Mobile Map Overview](public/overview/mobile-map.png) |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 💡 Core Concept
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Instead of selecting destinations from a traditional 2D drop-down, users navigate through an interactive **3D terrain map**.
+* **Interactive Exploration**: Drag, hover, and glide across a dynamic 3D landscape.
+* **Adventure Map Pins**: Navigation destinations are marked by reactive pins that scale, reveal details, and present tooltips upon hover.
+* **Cinematic Experience**: Shaders, weather patterns, and camera movements create a rich, immersive ambient background.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠️ Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* **Frontend Framework**: React 19 + TypeScript + Vite
+* **3D Rendering**: React Three Fiber (R3F) & Three.js
+* **Physics & Effects**: Custom GLSL Vertex/Fragment Shaders (Height Map & Cloud shader simulations)
+* **Animation & Motion**: GSAP (GreenSock Animation Platform) + `@gsap/react`
+* **Scroll & Physics**: Lenis for smooth momentum-scrolling
+* **Styling**: Tailwind CSS
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## ⚡ Main Features
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+* **Dynamic Shaders**: A custom heightmap/displacement shader simulates organic terrain interactions.
+* **Blob Simulation**: Interactive fluid forces warp the map geometry under the pointer.
+* **Smooth Camera Rigging**: GSAP coordinates camera transitions, rotation changes, and drag response seamlessly.
+* **Responsive Layout**:
+  * **Desktop**: Features grid lines, a compass overlay, and coordinate-aligned borders.
+  * **Mobile**: Optimized touch interactions, simplified shader execution, and a responsive viewport camera.
+* **Ambient Cloud layer**: Custom cloud simulation that shifts dynamically relative to scroll position.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🚀 Getting Started
+
+### Prerequisites
+
+Ensure you have [pnpm](https://pnpm.io/) installed.
+
+### Installation
+
+1. Clone the repository and navigate to the directory:
+   ```bash
+   pnpm install
+   ```
+
+2. Start the development server:
+   ```bash
+   pnpm dev
+   ```
+
+3. Open `http://localhost:5173` in your browser.
