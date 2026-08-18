@@ -14,17 +14,17 @@ import { cn } from '../../lib/utils'
 import GithubIcon from '../icons/GithubIcon'
 
 const tabs = [
-    {key:"map",IconNode:<MapIcon/>,isLink:true},
-    {key:"project",IconNode:<FireIcon/>, isLink:true},
-    {key:"about",IconNode:<AboutIcon/>, isLink:true},
-    {key:"contact",IconNode:<ContactIcon/>, isLink:true},
-    {key:"github",IconNode:<GithubIcon/>, isLink:true,},
-    {key:"LinkedIn",IconNode:<LinkedInIcon/>, isLink:true},
-    {key:"Playground",IconNode:<PlaygroundIcon/>, isLink:true},
-    {key:"Road",IconNode:<RoadIcon/>, isLink:false},
-    {key:"trail",IconNode:<TrailIcon/>, isLink:false},
-    {key:"viewport",IconNode:<ViewportIcon/>, isLink:false},
-    {key:"fishing spot",IconNode:<FishingSpotIcon/>, isLink:false},
+    {key:"map",IconNode:<MapIcon/>,isLink:true,link:"#"},
+    {key:"project",IconNode:<FireIcon/>, isLink:true,link:"#"},
+    {key:"about",IconNode:<AboutIcon/>, isLink:true,link:"#"},
+    {key:"contact",IconNode:<ContactIcon/>, isLink:true,link:"#"},
+    {key:"github",IconNode:<GithubIcon/>, isLink:true,link:"https://github.com/Sam-Aklan"},
+    {key:"LinkedIn",IconNode:<LinkedInIcon/>, isLink:true,link:"https://www.linkedin.com/in/sam-abdulilah-657022338/"},
+    {key:"Playground",IconNode:<PlaygroundIcon/>, isLink:true,link:"#"},
+    {key:"Road",IconNode:<RoadIcon/>, isLink:false,link:undefined},
+    {key:"trail",IconNode:<TrailIcon/>, isLink:false,link:undefined},
+    {key:"viewport",IconNode:<ViewportIcon/>, isLink:false,link:undefined},
+    {key:"fishing spot",IconNode:<FishingSpotIcon/>, isLink:false,link:undefined},
 ]
 
 function Sidebar({isDropDown=false}:{isDropDown?:boolean}) {
