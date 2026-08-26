@@ -37,6 +37,7 @@ function Sidebar({isDropDown=false}:{isDropDown?:boolean}) {
       IconNode={icon.IconNode} 
       isActive={activeTab === icon.key} 
       isLink={icon.isLink} 
+      link={icon.link}
       setActive={setActiveTab}
       isDropDown={isDropDown}/>)}
       

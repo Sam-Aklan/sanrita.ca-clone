@@ -113,7 +113,7 @@ function Pin({ position, title, image, color,IconNode,SpotNode, onHoverChange }:
           style={{ transform: `translate(-50%, ${image?-20:-280}%)` }} // Offset above the pin
           className="pointer-events-none"
         >
-          <div className="text-adventure-yellow font-f37stout  rounded-xl text-md pointer-events-none select-none w-50 md:w-120 h-auto image-wrapper">
+          <div className="text-adventure-yellow font-f37stout  rounded-xl text-md pointer-events-none select-none w-80 md:w-130 h-auto image-wrapper">
            {image ? <img src={image} className="rounded mb-2 w-full h-full bg-cover" /> : undefined}
             {title && !image?<h3>{title}</h3>:undefined}
           </div>

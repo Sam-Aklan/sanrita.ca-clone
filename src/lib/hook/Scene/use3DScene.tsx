@@ -178,7 +178,7 @@ const use3DScene = ({scrollProgress}:{scrollProgress: RefObject<{ value: number 
         dragOffset.current.x += dx * moveScale;
         dragOffset.current.y -= dy * moveScale;
 
-        dragOffset.current.x = THREE.MathUtils.clamp(dragOffset.current.x, -10.0, 10.0);
+        dragOffset.current.x = THREE.MathUtils.clamp(dragOffset.current.x, -5.5, 5.5);
         dragOffset.current.y = THREE.MathUtils.clamp(dragOffset.current.y, -5.0, 5.0);
 
         const transitionX = THREE.MathUtils.lerp(initialX, 0, p);
